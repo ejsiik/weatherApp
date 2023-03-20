@@ -1,10 +1,3 @@
-//
-//  WeatherManager.swift
-//  WeatherApp
-//
-//  Created by Stephanie Diep on 2021-11-30.
-//
-
 import Foundation
 import CoreLocation
 
@@ -12,7 +5,7 @@ class WeatherManager {
     // HTTP request to get the current weather depending on the coordinates we got from LocationManager
     func getCurrentWeather(latitude: CLLocationDegrees, longitude: CLLocationDegrees) async throws -> ResponseBody {
         // Replace YOUR_API_KEY in the link below with your own
-        guard let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude)&lon=\(longitude)&appid=48532a5e16bd27acbb55cf0c9b778afc&units=metric") else { fatalError("Missing URL") }
+        guard let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude)&lon=\(longitude)&appid=f1713ff8f3edf7b7afd6a48d1bd6c659&units=metric") else { fatalError("Missing URL") }
 
 
         let urlRequest = URLRequest(url: url)
@@ -63,6 +56,7 @@ struct ResponseBody: Decodable {
 }
 
 extension ResponseBody.MainResponse {
+    var Temp: Double {return temp}
     var feelsLike: Double { return feels_like }
     var tempMin: Double { return temp_min }
     var tempMax: Double { return temp_max }

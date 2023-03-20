@@ -1,11 +1,6 @@
-//
-//  ContentView.swift
-//  WeatherApp
-//
-//  Created by Stephanie Diep on 2021-11-30.
-//
-
 import SwiftUI
+import CoreLocationUI
+import CoreLocation
 
 struct ContentView: View {
     // Replace YOUR_API_KEY in WeatherManager with your own API key for the app to work
@@ -15,6 +10,22 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
+            // location access granted
+            if let location = locationManager.location {
+                if let weather = weather {
+                        
+                }
+            } else {
+                //let decodedData = try
+            }
+            
+            LocationButton(.shareCurrentLocation) {
+                locationManager.requestLocation()
+            }
+        }
+        
+        
+        /*VStack {
             if let location = locationManager.location {
                 if let weather = weather {
                     WeatherView(weather: weather)
@@ -38,7 +49,7 @@ struct ContentView: View {
             }
         }
         .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.dark)*/
     }
 }
 

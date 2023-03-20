@@ -1,10 +1,3 @@
-//
-//  LocationManager.swift
-//  WeatherApp
-//
-//  Created by Stephanie Diep on 2021-11-30.
-//
-
 import Foundation
 import CoreLocation
 
@@ -22,7 +15,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.delegate = self
     }
     
-    // Requests the one-time delivery of the user’s current location, see https://developer.apple.com/documentation/corelocation/cllocationmanager/1620548-requestlocation
     func requestLocation() {
         isLoading = true
         manager.requestLocation()
