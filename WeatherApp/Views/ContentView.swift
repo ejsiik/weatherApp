@@ -7,28 +7,27 @@ struct ContentView: View {
     @StateObject var locationManager = LocationManager()
     var weatherManager = WeatherManager()
     @State var weather: ResponseBody?
+    @State private var selection = 1 // tabitem selection by default
     
     var body: some View {
         VStack {
-            // location access granted
             if let location = locationManager.location {
                 if let weather = weather {
-                        
-                }
-            } else {
-                //let decodedData = try
-            }
-            
-            LocationButton(.shareCurrentLocation) {
-                locationManager.requestLocation()
-            }
-        }
-        
-        
-        /*VStack {
-            if let location = locationManager.location {
-                if let weather = weather {
-                    WeatherView(weather: weather)
+                    TabView(selection: $selection) {
+                        View1()
+                            .tabItem{
+                                Image(systemName: "location")
+                            }.tag(0)
+                        WeatherView(weather: weather)
+                            .tabItem{
+                                Image(systemName: "sun.max")
+                            }.tag(1)
+                        View2()
+                            .tabItem{
+                                Image(systemName: "bolt.heart")
+                            }.tag(2)
+                    }
+                    .tabViewStyle(PageTabViewStyle())
                 } else {
                     LoadingView()
                         .task {
@@ -49,7 +48,8 @@ struct ContentView: View {
             }
         }
         .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
-        .preferredColorScheme(.dark)*/
+        .preferredColorScheme(.dark)
+
     }
 }
 
