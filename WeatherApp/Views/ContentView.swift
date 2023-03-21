@@ -22,9 +22,9 @@ struct ContentView: View {
                             .tabItem{
                                 Image(systemName: "sun.max")
                             }.tag(1)
-                        View2()
+                        View2(items: ["Item 1", "Item 2", "Item 3"])
                             .tabItem{
-                                Image(systemName: "bolt.heart")
+                                Image(systemName: "heart.fill")
                             }.tag(2)
                     }
                     .tabViewStyle(PageTabViewStyle())
