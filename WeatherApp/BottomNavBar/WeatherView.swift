@@ -55,9 +55,9 @@ struct WeatherView: View {
                                 .padding(.bottom)
                             
                             HStack {
-                                WeatherRow(logo: "temperature", name: "Min temp", value: (weather.main.tempMin.roundDouble() + ("°")))
+                                WeatherRow(logo: "thermometer.low", name: "Min temp", value: (weather.main.tempMin.roundDouble() + ("°")))
                                 Spacer()
-                                WeatherRow(logo: "thermometer", name: "Max temp", value: (weather.main.tempMax.roundDouble() + "°"))
+                                WeatherRow(logo: "thermometer.high", name: "Max temp", value: (weather.main.tempMax.roundDouble() + "°"))
                             }
                             
                             HStack {
@@ -69,7 +69,7 @@ struct WeatherView: View {
                             HStack {
                                 WeatherRow(logo: "pressure", name: "Pressure", value: (weather.main.pressure.roundDouble() + " hPa"))
                                 Spacer()
-                                WeatherRow(logo: "humidity", name: "Feels like", value: "\(weather.main.feelsLike.roundDouble())°")
+                                WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weather.main.feelsLike.roundDouble())°")
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
