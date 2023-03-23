@@ -59,21 +59,21 @@ struct ContentView: View {
                              Image(systemName: "heart.fill")
                          }.tag(2)
                  }
-             .tabViewStyle(PageTabViewStyle())
+             //.tabViewStyle(PageTabViewStyle())
              } else {
                  LoadingView()
                      .task {
-                         do {
+                         /*do {
                              weather = try await weatherManager.getCurrentWeather(latitude: location.latitude, longitude: location.longitude)
                          } catch {
                              print("Error getting weather: \(error)")
-                         }
+                         }*/
                          /*do {
                           weather = try await weatherManager.getCurrentWeather(latitude: location.latitude, longitude: location.longitude)
                           } catch {
                           print("Error getting weather: \(error)")
                           }*/
-                         /*do {
+                         do {
                           weather = try await weatherManager.getCurrentWeather(latitude: location.latitude, longitude: location.longitude)
                           } catch {
                           print("Error getting weather: \(error)")
@@ -84,7 +84,7 @@ struct ContentView: View {
                           } catch {
                           print("Error parsing local weather data: \(error)")
                           }
-                          }*/
+                          }
                      }
              }
             } else {

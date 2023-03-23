@@ -1,125 +1,123 @@
 import SwiftUI
 
 struct Location: Codable, Identifiable {
-    let id: Int
+    let id = UUID()
     let name: String
-    let longitude: Double?
-    let latitude: Double?
 }
 
 struct WeatherData: Codable {
-    let main: Main
-    let weather: [Weather]
-}
-
-struct Main: Codable {
-    let temp: Double
-}
-
-struct Weather: Codable {
-    let description: String
-}
-
-struct View2: View {
-    @State var locations = [Location]()
-    @State var cityName = ""
+    let name: String
     
-    var body: some View {
-        VStack {
-            HStack {
-                TextField("Enter city name", text: $cityName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                Button("Add") {
-                    addLocation()
+    enum CodingKeys: String, CodingKey {
+        case name
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+    }
+}
+
+class LocationManagerView2: ObservableObject {
+    @Published var locations = [Location]()
+    
+    init() {
+        loadLocations()
+    }
+    
+    func loadLocations() {
+        guard let locationsData = UserDefaults.standard.data(forKey: "locations") else {
+            return
+        }
+        let locations = try? JSONDecoder().decode([Location].self, from: locationsData)
+        self.locations = locations ?? []
+    }
+
+    func addLocation(_ locationName: String) {
+        guard !locationName.isEmpty else { return }
+        if locations.contains(where: { $0.name.lowercased() == locationName.lowercased() }) {
+            // Lokalizacja już istnieje na liście
+            return
+        }
+        fetchWeatherData(forCity: locationName)
+    }
+
+    private func fetchWeatherData(forCity city: String) {
+        let apiKey = "f1713ff8f3edf7b7afd6a48d1bd6c659"
+        let urlString = "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=\(apiKey)&units=metric"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL: \(urlString)")
+            return
+        }
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data else {
+                print("No data in response: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            do {
+                let decoder = JSONDecoder()
+                let weatherData = try decoder.decode(WeatherData.self, from: data)
+                DispatchQueue.main.async {
+                    let newLocation = Location(name: weatherData.name)
+                    self.locations.append(newLocation)
+                    self.saveLocations()
                 }
-            }.padding()
-            List {
-                ForEach(locations) { location in
-                    Text(location.name)
-                        .onTapGesture {
-                            print(location.id)
-                            fetchWeatherData(for: location)
-                        }
-                }
-                .onDelete(perform: delete)
+            } catch {
+                print("Error decoding weather data: \(error.localizedDescription)")
             }
         }
-        .onAppear {
-            loadData()
-        }
+        task.resume()
     }
     
-    func loadData() {
-        if let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=Gliwice&appid=f1713ff8f3edf7b7afd6a48d1bd6c659") {
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                if let data = data {
-                    do {
-                        let decoder = JSONDecoder()
-                        let result = try decoder.decode(Location.self, from: data)
-                        DispatchQueue.main.async {
-                            locations.append(result)
-                        }
-                    } catch {
-                        print(error)
-                    }
-                }
-            }.resume()
-        }
+    func saveLocations() {
+        let locationsData = try? JSONEncoder().encode(locations)
+        UserDefaults.standard.set(locationsData, forKey: "locations")
     }
-    
-    func addLocation() {
-        if let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityName)&appid=f1713ff8f3edf7b7afd6a48d1bd6c659") {
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                if let data = data {
-                    do {
-                        let decoder = JSONDecoder()
-                        let location = try decoder.decode(Location.self, from: data)
-                        DispatchQueue.main.async {
-                            if !locations.contains(where: { $0.name == location.name }) {
-                                locations.append(location)
+}
+
+
+struct View2: View {
+    @State private var locationName = ""
+    @StateObject private var locationManager = LocationManagerView2()
+
+    var body: some View {
+        VStack {
+            List {
+                ForEach(locationManager.locations) { location in
+                    Text(location.name)
+                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            Button {
+                                removeLocation(location: location)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
+                            .tint(.red)
                         }
-                        if let longitude = location.longitude, let latitude = location.latitude {
-                            let weatherUrl = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude)&lon=\(longitude)&appid=f1713ff8f3edf7b7afd6a48d1bd6c659")!
-                            URLSession.shared.dataTask(with: weatherUrl) { data, response, error in
-                                if let data = data {
-                                    do {
-                                        let decoder = JSONDecoder()
-                                        let weatherData = try decoder.decode(WeatherData.self, from: data)
-                                        print(weatherData)
-                                    } catch {
-                                        print(error)
-                                    }
-                                }
-                            }.resume()
-                        }
-                    } catch {
-                        print(error)
-                    }
                 }
-            }.resume()
+                .onDelete(perform: removeLocations)
+            }
+            HStack {
+                TextField("Enter city name", text: $locationName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                Button("Add") {
+                    locationManager.addLocation(locationName)
+                    locationName = ""
+                }
+            }.padding()
+        }
+        .navigationBarItems(trailing: EditButton())
+    }
+
+    func removeLocation(location: Location) {
+        if let index = locationManager.locations.firstIndex(where: { $0.id == location.id }) {
+            locationManager.locations.remove(at: index)
+            locationManager.saveLocations()
         }
     }
-    
-    func delete(at offsets: IndexSet) {
-        locations.remove(atOffsets: offsets)
-    }
-    
-    func fetchWeatherData(for location: Location) {
-        if let longitude = location.longitude, let latitude = location.latitude {
-            let weatherUrl = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude)&lon=\(longitude)&appid=f1713ff8f3edf7b7afd6a48d1bd6c659")!
-            URLSession.shared.dataTask(with: weatherUrl) { data, response, error in
-                if let data = data {
-                    do {
-                        let decoder = JSONDecoder()
-                        let weatherData = try decoder.decode(WeatherData.self, from: data)
-                        print(weatherData)
-                    } catch {
-                        print(error)
-                    }
-                }
-            }.resume()
-        }
+
+    func removeLocations(at offsets: IndexSet) {
+        locationManager.locations.remove(atOffsets: offsets)
+        locationManager.saveLocations()
     }
     
     struct View2_Previews: PreviewProvider {
