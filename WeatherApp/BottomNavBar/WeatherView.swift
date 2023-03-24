@@ -4,16 +4,15 @@ struct WeatherView: View {
     // Replace YOUR_API_KEY in WeatherManager with your own API key for the app to work
     var weather: ResponseBody
     @EnvironmentObject var sharedText: SharedText
+    @EnvironmentObject var locationManager: LocationManager
+    @EnvironmentObject var weatherViewModel: WeatherViewModel
     
     var body: some View {
         ScrollView{
-            Button("Print") {
-                Task { print(sharedText.text) }
-            }
             ZStack(alignment: .leading) {
                 VStack {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(weather.name)
+                        Text(weatherViewModel.weather?.name ?? "")
                             .bold()
                             .font(.title)
                         
@@ -30,13 +29,15 @@ struct WeatherView: View {
                                 Image(systemName: "cloud")
                                     .font(.system(size: 40))
                                 
-                                Text("\(weather.weather[0].main)")
+                                //("\(weather.weather[0].main)")
+                                Text("\(weatherViewModel.weather?.weather[0].main ?? "")")
                             }
                             .frame(width: 150, alignment: .leading)
                             
                             Spacer()
                             
-                            Text(weather.main.temp.roundDouble() + "°")
+                            //Text(weather.main.temp.roundDouble() + "°")
+                            Text("\(weatherViewModel.weather?.main.temp.roundDouble() ?? "0")°")
                                 .font(.system(size: 100))
                                 .fontWeight(.bold)
                                 .padding()
@@ -51,22 +52,23 @@ struct WeatherView: View {
                                 .padding(.bottom)
                             
                             HStack {
-                                WeatherRow(logo: "thermometer.low", name: "Min temp", value: (weather.main.tempMin.roundDouble() + ("°")))
+                                WeatherRow(logo: "thermometer.low", name: "Min temp", value: "\(weatherViewModel.weather?.main.tempMin.roundDouble() ?? "0")°")
                                 Spacer()
-                                WeatherRow(logo: "thermometer.high", name: "Max temp", value: (weather.main.tempMax.roundDouble() + "°"))
+                                WeatherRow(logo: "thermometer.high", name: "Max temp", value: "\(weatherViewModel.weather?.main.tempMax.roundDouble() ?? "0")°")
                             }
                             
                             HStack {
-                                WeatherRow(logo: "wind", name: "Wind speed", value: (weather.wind.speed.roundDouble() + " m/s"))
+                                WeatherRow(logo: "wind", name: "Wind speed", value: "\(weatherViewModel.weather?.wind.speed.roundDouble() ?? "0") m/s")
                                 Spacer()
-                                WeatherRow(logo: "humidity", name: "Humidity", value: "\(weather.main.humidity.roundDouble())%")
+                                WeatherRow(logo: "humidity", name: "Humidity", value: "\(weatherViewModel.weather?.main.humidity.roundDouble() ?? "0")%")
                             }
                             
                             HStack {
-                                WeatherRow(logo: "pressure", name: "Pressure", value: (weather.main.pressure.roundDouble() + " hPa"))
+                                WeatherRow(logo: "pressure", name: "Pressure", value: "\(weatherViewModel.weather?.main.pressure.roundDouble() ?? "0") hPa")
                                 Spacer()
-                                WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weather.main.feelsLike.roundDouble())°")
+                                WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weatherViewModel.weather?.main.feelsLike.roundDouble() ?? "0")°")
                             }
+                            
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
@@ -85,10 +87,12 @@ struct WeatherView: View {
                 .preferredColorScheme(.dark)
                 
             }
-            
+    }.onAppear {
+            Task {
+                await weatherViewModel.getWeatherForCity(city: sharedText.text)
+            }
         }
     }
-    
 }
 /*struct WeatherView_Previews: PreviewProvider {
     static var previews: some View {

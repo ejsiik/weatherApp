@@ -1,13 +1,13 @@
 import Foundation
 import CoreLocation
 
-
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Creating an instance of CLLocationManager, the framework we use to get the coordinates
     let manager = CLLocationManager()
     
     @Published var location: CLLocationCoordinate2D?
     @Published var isLoading = false
+    //@Published var cityLocation = "Gliwice"
     
     override init() {
         super.init()
@@ -19,14 +19,20 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func requestLocation() {
         isLoading = true
         manager.requestLocation()
+        //cityLocation = sharedText
+        //print(cityLocation+"locationmanager1")
     }
     
     func requestLocationByCity(city: String) async throws {
-        isLoading = true
+        defer {
+            Task { await MainActor.run { isLoading = true } }
+        }
         // We can't use await in defer so we wrapped it in task
         defer {
             Task { await MainActor.run { isLoading = false } }
         }
+        //let city = cityLocation
+        //print(city+"locationmanager2")
         guard let url = URL(string: "https://api.openweathermap.org/geo/1.0/direct?q=\(city)&limit=1&appid=f1713ff8f3edf7b7afd6a48d1bd6c659&units=metric")
         else {
             fatalError("Missing URL")
@@ -58,13 +64,16 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         location = locations.first?.coordinate
         isLoading = false
+        //cityLocation = "Gliwice"
     }
+    
     
     
     // This function will be called if we run into an error
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Error getting location", error)
         isLoading = false
+        //cityLocation = "Gliwice"
     }
 }
 

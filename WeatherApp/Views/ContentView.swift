@@ -3,7 +3,7 @@ import CoreLocationUI
 import CoreLocation
 
 class SharedText: ObservableObject {
-    @Published var text: String = "Lokalizacja"
+    @Published var text: String = "Gliwice"
 }
 
 struct ContentView: View {
@@ -13,6 +13,7 @@ struct ContentView: View {
     @State var weather: ResponseBody?
     @State private var selection = 1 // tabitem selection by default
     @StateObject private var sharedText = SharedText()
+    @StateObject private var weatherViewModel = WeatherViewModel()
     
     
     var body: some View {
@@ -26,6 +27,8 @@ struct ContentView: View {
                          }.tag(0)
                      WeatherView(weather: weather)
                          .environmentObject(sharedText)
+                         .environmentObject(locationManager)
+                         .environmentObject(weatherViewModel)
                          .tabItem{
                              Image(systemName: "sun.max")
                          }.tag(1)
@@ -60,6 +63,7 @@ struct ContentView: View {
                 } else {
                     WelcomeView()
                         .environmentObject(locationManager)
+                        .environmentObject(sharedText)
                 }
             }
         }

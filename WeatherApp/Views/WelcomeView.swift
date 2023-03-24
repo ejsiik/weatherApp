@@ -4,9 +4,11 @@ import CoreLocationUI
 struct WelcomeView: View {
     @EnvironmentObject var locationManager: LocationManager
     @State private var locationName = ""
+    @StateObject private var sharedText = SharedText()
     
     func search(city: String) async {
         do {
+            sharedText.text = city
             try await locationManager.requestLocationByCity(city: locationName)
         } catch {
             print("Error")
