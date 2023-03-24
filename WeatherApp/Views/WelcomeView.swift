@@ -3,7 +3,16 @@ import CoreLocationUI
 
 struct WelcomeView: View {
     @EnvironmentObject var locationManager: LocationManager
-
+    @State private var locationName = ""
+    
+    func search(city: String) async {
+        do {
+            try await locationManager.requestLocationByCity(city: locationName)
+        } catch {
+            print("Error")
+        }
+    }
+    
     var body: some View {
         VStack {
             VStack(spacing: 20) {
@@ -19,12 +28,26 @@ struct WelcomeView: View {
 
             
             // LocationButton from CoreLocationUI framework imported above, allows us to requestionLocation
-            LocationButton(.shareCurrentLocation) {
-                locationManager.requestLocation()
+            VStack{
+                LocationButton(.shareCurrentLocation) {
+                    locationManager.requestLocation()
             }
             .cornerRadius(30)
             .symbolVariant(.fill)
             .foregroundColor(.white)
+            
+                Text("or").padding()
+                
+                HStack {
+                    TextField("Enter city name", text: $locationName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .fixedSize()
+                    Button("Search") {
+                        Task { await search(city: locationName) }
+                    }
+                }
+
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

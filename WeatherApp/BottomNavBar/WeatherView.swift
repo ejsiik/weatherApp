@@ -3,9 +3,13 @@ import SwiftUI
 struct WeatherView: View {
     // Replace YOUR_API_KEY in WeatherManager with your own API key for the app to work
     var weather: ResponseBody
+    @EnvironmentObject var sharedText: SharedText
     
     var body: some View {
         ScrollView{
+            Button("Print") {
+                Task { print(sharedText.text) }
+            }
             ZStack(alignment: .leading) {
                 VStack {
                     VStack(alignment: .leading, spacing: 5) {
