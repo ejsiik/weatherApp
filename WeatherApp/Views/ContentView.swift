@@ -45,7 +45,7 @@ struct ContentView: View {
 
             if let location = locationManager.location {
              if let weather = weather {
-                 TabView(selection: $selection) {
+                 TabView(selection: $selection) {	
                      View1()
                          .tabItem{
                              Image(systemName: "location")
@@ -54,13 +54,14 @@ struct ContentView: View {
                          .tabItem{
                              Image(systemName: "sun.max")
                          }.tag(1)
-                     View2()
+                     FavouriteView()
                          .tabItem{
                              Image(systemName: "heart.fill")
                          }.tag(2)
                  }
              //.tabViewStyle(PageTabViewStyle())
              } else {
+                 // Dodać info dla użytkownika że pobrano dane offline!!!!!!!!!!!
                  LoadingView()
                      .task {
                          /*do {
