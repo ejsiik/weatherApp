@@ -12,10 +12,16 @@ struct WeatherView: View {
             ZStack(alignment: .leading) {
                 VStack {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(weatherViewModel.weather?.name ?? "")
-                            .bold()
-                            .font(.title)
-                        
+                        if(sharedText.text == "no")
+                        {
+                            Text(weather.name)
+                                .bold()
+                                .font(.title)
+                        } else {
+                            Text(weatherViewModel.weather?.name ?? "")
+                                .bold()
+                                .font(.title)
+                        }
                         Text("Today, \(Date().formatted(.dateTime.month().day().hour().minute()))")
                             .fontWeight(.light)
                     }
@@ -28,21 +34,27 @@ struct WeatherView: View {
                             VStack(spacing: 20) {
                                 Image(systemName: "cloud")
                                     .font(.system(size: 40))
-                                
-                                //("\(weather.weather[0].main)")
-                                Text("\(weatherViewModel.weather?.weather[0].main ?? "")")
+                                if(sharedText.text == "no") {
+                                    Text("\(weather.weather[0].main)")
+                                } else {
+                                    Text("\(weatherViewModel.weather?.weather[0].main ?? "")")
+                                }
                             }
                             .frame(width: 150, alignment: .leading)
                             
                             Spacer()
-                            
-                            //Text(weather.main.temp.roundDouble() + "°")
-                            Text("\(weatherViewModel.weather?.main.temp.roundDouble() ?? "0")°")
-                                .font(.system(size: 100))
-                                .fontWeight(.bold)
-                                .padding()
+                            if(sharedText.text == "no") {
+                                Text(weather.main.temp.roundDouble() + "°")
+                                    .font(.system(size: 100))
+                                    .fontWeight(.bold)
+                                    .padding()
+                            } else {
+                                Text("\(weatherViewModel.weather?.main.temp.roundDouble() ?? "0")°")
+                                    .font(.system(size: 100))
+                                    .fontWeight(.bold)
+                                    .padding()
+                            }
                         }
-                        
                         Spacer()
                             .frame(height:  80)
                         
@@ -52,21 +64,45 @@ struct WeatherView: View {
                                 .padding(.bottom)
                             
                             HStack {
-                                WeatherRow(logo: "thermometer.low", name: "Min temp", value: "\(weatherViewModel.weather?.main.tempMin.roundDouble() ?? "0")°")
-                                Spacer()
-                                WeatherRow(logo: "thermometer.high", name: "Max temp", value: "\(weatherViewModel.weather?.main.tempMax.roundDouble() ?? "0")°")
+                                if(sharedText.text == "no")
+                                {
+                                    WeatherRow(logo: "thermometer.low", name: "Min temp", value: (weather.main.tempMin.roundDouble() + ("°")))
+                                    Spacer()
+                                    WeatherRow(logo: "thermometer.high", name: "Max temp", value: (weather.main.tempMax.roundDouble() + "°"))
+                                }
+                                else {
+                                    WeatherRow(logo: "thermometer.low", name: "Min temp", value: "\(weatherViewModel.weather?.main.tempMin.roundDouble() ?? "0")°")
+                                    Spacer()
+                                    WeatherRow(logo: "thermometer.high", name: "Max temp", value: "\(weatherViewModel.weather?.main.tempMax.roundDouble() ?? "0")°")
+                                }
                             }
                             
                             HStack {
-                                WeatherRow(logo: "wind", name: "Wind speed", value: "\(weatherViewModel.weather?.wind.speed.roundDouble() ?? "0") m/s")
-                                Spacer()
-                                WeatherRow(logo: "humidity", name: "Humidity", value: "\(weatherViewModel.weather?.main.humidity.roundDouble() ?? "0")%")
+                                if(sharedText.text == "no")
+                                {
+                                    WeatherRow(logo: "wind", name: "Wind speed", value: (weather.wind.speed.roundDouble() + " m/s"))
+                                    Spacer()
+                                    WeatherRow(logo: "humidity", name: "Humidity", value: "\(weather.main.humidity.roundDouble())%")
+                                }
+                                else {
+                                    WeatherRow(logo: "wind", name: "Wind speed", value: "\(weatherViewModel.weather?.wind.speed.roundDouble() ?? "0") m/s")
+                                    Spacer()
+                                    WeatherRow(logo: "humidity", name: "Humidity", value: "\(weatherViewModel.weather?.main.humidity.roundDouble() ?? "0")%")
+                                }
                             }
                             
                             HStack {
-                                WeatherRow(logo: "pressure", name: "Pressure", value: "\(weatherViewModel.weather?.main.pressure.roundDouble() ?? "0") hPa")
-                                Spacer()
-                                WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weatherViewModel.weather?.main.feelsLike.roundDouble() ?? "0")°")
+                                if(sharedText.text == "no")
+                                {
+                                    WeatherRow(logo: "pressure", name: "Pressure", value: (weather.main.pressure.roundDouble() + " hPa"))
+                                    Spacer()
+                                    WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weather.main.feelsLike.roundDouble())°")
+                                }
+                                else {
+                                    WeatherRow(logo: "pressure", name: "Pressure", value: "\(weatherViewModel.weather?.main.pressure.roundDouble() ?? "0") hPa")
+                                    Spacer()
+                                    WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weatherViewModel.weather?.main.feelsLike.roundDouble() ?? "0")°")
+                                }
                             }
                             
                         }
@@ -89,7 +125,12 @@ struct WeatherView: View {
             }
     }.onAppear {
             Task {
-                await weatherViewModel.getWeatherForCity(city: sharedText.text)
+                if(sharedText.text == "no")
+                {
+                    print(locationManager.location ?? "xd")
+                } else {
+                    await weatherViewModel.getWeatherForCity(city: sharedText.text)
+                }
             }
         }
     }

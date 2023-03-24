@@ -3,7 +3,7 @@ import CoreLocationUI
 import CoreLocation
 
 class SharedText: ObservableObject {
-    @Published var text: String = "Gliwice"
+    @Published var text: String = "no"
 }
 
 struct ContentView: View {
@@ -63,7 +63,6 @@ struct ContentView: View {
                 } else {
                     WelcomeView()
                         .environmentObject(locationManager)
-                        .environmentObject(sharedText)
                 }
             }
         }
