@@ -4,19 +4,24 @@ struct WeatherView: View {
     // Replace YOUR_API_KEY in WeatherManager with your own API key for the app to work
     var weather: ResponseBody
     @EnvironmentObject var sharedText: SharedText
+    @EnvironmentObject var locationManager: LocationManager
+    @EnvironmentObject var weatherViewModel: WeatherViewModel
     
     var body: some View {
         ScrollView{
-            Button("Print") {
-                Task { print(sharedText.text) }
-            }
             ZStack(alignment: .leading) {
                 VStack {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(weather.name)
-                            .bold()
-                            .font(.title)
-                        
+                        if(sharedText.text == "no")
+                        {
+                            Text(weather.name)
+                                .bold()
+                                .font(.title)
+                        } else {
+                            Text(weatherViewModel.weather?.name ?? "")
+                                .bold()
+                                .font(.title)
+                        }
                         Text("Today, \(Date().formatted(.dateTime.month().day().hour().minute()))")
                             .fontWeight(.light)
                     }
@@ -29,19 +34,27 @@ struct WeatherView: View {
                             VStack(spacing: 20) {
                                 Image(systemName: "cloud")
                                     .font(.system(size: 40))
-                                
-                                Text("\(weather.weather[0].main)")
+                                if(sharedText.text == "no") {
+                                    Text("\(weather.weather[0].main)")
+                                } else {
+                                    Text("\(weatherViewModel.weather?.weather[0].main ?? "")")
+                                }
                             }
                             .frame(width: 150, alignment: .leading)
                             
                             Spacer()
-                            
-                            Text(weather.main.temp.roundDouble() + "°")
-                                .font(.system(size: 100))
-                                .fontWeight(.bold)
-                                .padding()
+                            if(sharedText.text == "no") {
+                                Text(weather.main.temp.roundDouble() + "°")
+                                    .font(.system(size: 100))
+                                    .fontWeight(.bold)
+                                    .padding()
+                            } else {
+                                Text("\(weatherViewModel.weather?.main.temp.roundDouble() ?? "0")°")
+                                    .font(.system(size: 100))
+                                    .fontWeight(.bold)
+                                    .padding()
+                            }
                         }
-                        
                         Spacer()
                             .frame(height:  80)
                         
@@ -51,22 +64,47 @@ struct WeatherView: View {
                                 .padding(.bottom)
                             
                             HStack {
-                                WeatherRow(logo: "thermometer.low", name: "Min temp", value: (weather.main.tempMin.roundDouble() + ("°")))
-                                Spacer()
-                                WeatherRow(logo: "thermometer.high", name: "Max temp", value: (weather.main.tempMax.roundDouble() + "°"))
+                                if(sharedText.text == "no")
+                                {
+                                    WeatherRow(logo: "thermometer.low", name: "Min temp", value: (weather.main.tempMin.roundDouble() + ("°")))
+                                    Spacer()
+                                    WeatherRow(logo: "thermometer.high", name: "Max temp", value: (weather.main.tempMax.roundDouble() + "°"))
+                                }
+                                else {
+                                    WeatherRow(logo: "thermometer.low", name: "Min temp", value: "\(weatherViewModel.weather?.main.tempMin.roundDouble() ?? "0")°")
+                                    Spacer()
+                                    WeatherRow(logo: "thermometer.high", name: "Max temp", value: "\(weatherViewModel.weather?.main.tempMax.roundDouble() ?? "0")°")
+                                }
                             }
                             
                             HStack {
-                                WeatherRow(logo: "wind", name: "Wind speed", value: (weather.wind.speed.roundDouble() + " m/s"))
-                                Spacer()
-                                WeatherRow(logo: "humidity", name: "Humidity", value: "\(weather.main.humidity.roundDouble())%")
+                                if(sharedText.text == "no")
+                                {
+                                    WeatherRow(logo: "wind", name: "Wind speed", value: (weather.wind.speed.roundDouble() + " m/s"))
+                                    Spacer()
+                                    WeatherRow(logo: "humidity", name: "Humidity", value: "\(weather.main.humidity.roundDouble())%")
+                                }
+                                else {
+                                    WeatherRow(logo: "wind", name: "Wind speed", value: "\(weatherViewModel.weather?.wind.speed.roundDouble() ?? "0") m/s")
+                                    Spacer()
+                                    WeatherRow(logo: "humidity", name: "Humidity", value: "\(weatherViewModel.weather?.main.humidity.roundDouble() ?? "0")%")
+                                }
                             }
                             
                             HStack {
-                                WeatherRow(logo: "pressure", name: "Pressure", value: (weather.main.pressure.roundDouble() + " hPa"))
-                                Spacer()
-                                WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weather.main.feelsLike.roundDouble())°")
+                                if(sharedText.text == "no")
+                                {
+                                    WeatherRow(logo: "pressure", name: "Pressure", value: (weather.main.pressure.roundDouble() + " hPa"))
+                                    Spacer()
+                                    WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weather.main.feelsLike.roundDouble())°")
+                                }
+                                else {
+                                    WeatherRow(logo: "pressure", name: "Pressure", value: "\(weatherViewModel.weather?.main.pressure.roundDouble() ?? "0") hPa")
+                                    Spacer()
+                                    WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weatherViewModel.weather?.main.feelsLike.roundDouble() ?? "0")°")
+                                }
                             }
+                            
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
@@ -85,10 +123,17 @@ struct WeatherView: View {
                 .preferredColorScheme(.dark)
                 
             }
-            
+    }.onAppear {
+            Task {
+                if(sharedText.text == "no")
+                {
+                    print(locationManager.location ?? "xd")
+                } else {
+                    await weatherViewModel.getWeatherForCity(city: sharedText.text)
+                }
+            }
         }
     }
-    
 }
 /*struct WeatherView_Previews: PreviewProvider {
     static var previews: some View {

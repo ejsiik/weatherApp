@@ -60,7 +60,7 @@ class FavouriteLocationManager: ObservableObject {
 }
 
 struct Location: Codable, Identifiable {
-    let id = UUID()
+    var id = UUID()
     let name: String
 }
 
