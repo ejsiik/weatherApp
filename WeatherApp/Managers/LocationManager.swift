@@ -24,15 +24,14 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func requestLocationByCity(city: String) async throws {
-        defer {
-            Task { await MainActor.run { isLoading = true } }
-        }
+        await MainActor.run { isLoading = true }
         // We can't use await in defer so we wrapped it in task
         defer {
             Task { await MainActor.run { isLoading = false } }
         }
         //let city = cityLocation
         //print(city+"locationmanager2")
+        // KURWA ENKODOWANIE URLI ZROBIĆ DO CHUJA PANA
         guard let url = URL(string: "https://api.openweathermap.org/geo/1.0/direct?q=\(city)&limit=1&appid=f1713ff8f3edf7b7afd6a48d1bd6c659&units=metric")
         else {
             fatalError("Missing URL")
