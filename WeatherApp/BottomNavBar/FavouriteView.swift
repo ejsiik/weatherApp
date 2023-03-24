@@ -4,6 +4,7 @@ struct FavouriteView: View {
     @State private var locationName = ""
     @StateObject private var favouriteLocationManager = FavouriteLocationManager()
     @StateObject private var locationManager = LocationManager()
+    @EnvironmentObject var sharedText: SharedText
     
 
     var body: some View {
@@ -39,6 +40,7 @@ struct FavouriteView: View {
     func selectLocation(city: String) async{
         do {
             try await locationManager.requestLocationByCity(city: city)
+            sharedText.text = city
         } catch {
             print("Error \(error)" )
         }
