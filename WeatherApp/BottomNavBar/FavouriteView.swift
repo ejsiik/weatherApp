@@ -4,7 +4,7 @@ import UIKit
 struct FavouriteView: View {
     @State private var locationName = ""
     @StateObject private var favouriteLocationManager = FavouriteLocationManager()
-    @StateObject private var locationManager = LocationManager()
+    @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject var sharedText: SharedText
     @FocusState private var isFocused: Bool
     

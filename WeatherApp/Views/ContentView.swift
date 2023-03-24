@@ -8,7 +8,7 @@ class SharedText: ObservableObject {
 
 struct ContentView: View {
     // Replace YOUR_API_KEY in WeatherManager with your own API key for the app to work
-    @StateObject var locationManager = LocationManager()
+    @EnvironmentObject var locationManager: LocationManager
     var weatherManager = WeatherManager()
     @State var weather: ResponseBody?
     @State private var selection = 1 // tabitem selection by default
@@ -21,7 +21,7 @@ struct ContentView: View {
             if let location = locationManager.location {
              if let weather = weather {
                  TabView(selection: $selection) {	
-                     View1()
+                     ForecastView()
                          .tabItem{
                              Image(systemName: "location")
                          }.tag(0)
