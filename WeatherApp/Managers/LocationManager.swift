@@ -1,13 +1,12 @@
 import Foundation
 import CoreLocation
+import UIKit
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Creating an instance of CLLocationManager, the framework we use to get the coordinates
     let manager = CLLocationManager()
-    
     @Published var location: CLLocationCoordinate2D?
     @Published var isLoading = false
-    //@Published var cityLocation = "Gliwice"
     
     override init() {
         super.init()
@@ -19,18 +18,16 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func requestLocation() {
         isLoading = true
         manager.requestLocation()
-        //cityLocation = sharedText
-        //print(cityLocation+"locationmanager1")
     }
     
-    func requestLocationByCity(city: String) async throws {
+    func requestLocationByCity(city: String, presentingViewController: UIViewController) async throws {
         await MainActor.run { isLoading = true }
+
         // We can't use await in defer so we wrapped it in task
         defer {
             Task { await MainActor.run { isLoading = false } }
         }
-        //let city = cityLocation
-        //print(city+"locationmanager2")
+
         // KURWA ENKODOWANIE URLI ZROBIĆ DO CHUJA PANA
         guard let url = URL(string: "https://api.openweathermap.org/geo/1.0/direct?q=\(city)&limit=1&appid=f1713ff8f3edf7b7afd6a48d1bd6c659&units=metric")
         else {
@@ -46,10 +43,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         var clCoords = CLLocationCoordinate2D();
         if decodedData.count == 0 {
-            await MainActor.run {
-                fatalError("City not found")
-            }
+            throw NSError(domain: "com.example.app", code: 404, userInfo: [NSLocalizedDescriptionKey: "City not found"])
         }
+        
         clCoords.latitude = decodedData[0].lat;
         clCoords.longitude = decodedData[0].lon;
         
@@ -63,19 +59,24 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         location = locations.first?.coordinate
         isLoading = false
-        //cityLocation = "Gliwice"
     }
-    
-    
     
     // This function will be called if we run into an error
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Error getting location", error)
         isLoading = false
-        //cityLocation = "Gliwice"
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+           let presentingViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+            
+            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                presentingViewController.dismiss(animated: true, completion: nil)
+            })
+            presentingViewController.present(alert, animated: true, completion: nil)
+        }
     }
 }
-
 
 struct OpenWAPICityData : Decodable {
     public var lat: Double;

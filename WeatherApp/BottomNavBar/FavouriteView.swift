@@ -1,12 +1,13 @@
 import SwiftUI
+import UIKit
 
 struct FavouriteView: View {
     @State private var locationName = ""
     @StateObject private var favouriteLocationManager = FavouriteLocationManager()
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject var sharedText: SharedText
+    @FocusState private var isFocused: Bool
     
-
     var body: some View {
         VStack {
             List {
@@ -28,9 +29,13 @@ struct FavouriteView: View {
             HStack {
                 TextField("Enter city name", text: $locationName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .focused($isFocused)
                 Button("Add") {
-                    favouriteLocationManager.addLocation(locationName)
+                    let replaced = (locationName as NSString).replacingOccurrences(of: " ", with: "+")
+                    let correct = replaced.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+                    favouriteLocationManager.addLocation(correct)
                     locationName = ""
+                    isFocused = false
                 }
             }.padding()
         }
@@ -39,8 +44,11 @@ struct FavouriteView: View {
 
     func selectLocation(city: String) async{
         do {
-            try await locationManager.requestLocationByCity(city: city)
-            sharedText.text = city
+            //try await locationManager.requestLocationByCity(city: city)
+            if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+               let hostingController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+                try await locationManager.requestLocationByCity(city: city, presentingViewController: hostingController)
+            }
         } catch {
             print("Error \(error)" )
         }
