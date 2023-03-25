@@ -69,7 +69,6 @@ struct WelcomeView: View {
             }
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-                
             }
             /*.alert(isPresented: $showAlert) {
                         Alert(
@@ -79,11 +78,11 @@ struct WelcomeView: View {
                                 showAlert = false
                             }
                         )
-                    }*/
+                    }
             .onAppear {
                 //checkInternetConnection()
                 
-            }
+            }*/
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
             .preferredColorScheme(.dark)
@@ -101,7 +100,6 @@ struct WelcomeView: View {
             await MainActor.run {
                 alertMessage = error.localizedDescription
                 showAlert = true
-                print("sdfsdfasdfafsdasdfafsdafsdadfs")
             }
         }
         locationManager.isLoading = false

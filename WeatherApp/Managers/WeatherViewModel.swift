@@ -4,7 +4,20 @@ import CoreLocation
 class WeatherViewModel: ObservableObject {
     @Published var weather: ResponseBody?
     private let weatherManager = WeatherManager()
+    @Published var forecastWeather: ForecastList?
 
+
+    func getWeatherForCoordinates(latitude: Double, longitude: Double) async {
+        do {
+            let forecast = try await weatherManager.getForecastWeather(latitude: latitude, longitude: longitude)
+            DispatchQueue.main.async {
+                self.forecastWeather = forecast
+            }
+        } catch {
+            print("Error fetching weather data: \(error)")
+        }
+    }
+    
     func getWeatherForCity(city: String) async {
         do {
             let coordinates = try await getCoordinates(forCity: city)
