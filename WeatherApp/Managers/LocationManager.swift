@@ -28,7 +28,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             Task { await MainActor.run { isLoading = false } }
         }
 
-        // KURWA ENKODOWANIE URLI ZROBIĆ DO CHUJA PANA
+        let city = city.addingPercentEncoding(withAllowedCharacters:.urlHostAllowed)!
         guard let url = URL(string: "https://api.openweathermap.org/geo/1.0/direct?q=\(city)&limit=1&appid=f1713ff8f3edf7b7afd6a48d1bd6c659&units=metric")
         else {
             fatalError("Missing URL")

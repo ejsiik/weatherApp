@@ -27,7 +27,7 @@ class WeatherViewModel: ObservableObject {
         return coordinate
     }
     
-    /*var sunriseTime: Date? {
+    var sunriseTime: Date? {
         if let unixTime = weather?.sys.sunrise {
             return Date(timeIntervalSince1970: Double(unixTime))
         }
@@ -39,6 +39,6 @@ class WeatherViewModel: ObservableObject {
             return Date(timeIntervalSince1970: Double(unixTime))
         }
         return nil
-    }*/
+    }
 
 }

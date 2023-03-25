@@ -29,7 +29,6 @@ struct ForecastView: View {
                             .bold()
                             .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 30))
                     }
-                    //.frame(maxWidth: .UIDevice.current.userInterfaceIdiom == .pad ? .infinity : .infinity, alignment: .leading)
                     .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 200 : 80, alignment: .leading)
                     ForecastListView(forecast: forecast!)
                 }

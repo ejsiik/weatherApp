@@ -1,4 +1,17 @@
 import SwiftUI
+import Network
+
+func convertTimestamp(_ timestamp: Int) -> String {
+    let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
+    let dateFormatter = DateFormatter()
+    dateFormatter.timeStyle = .short
+    dateFormatter.dateStyle = .none
+    dateFormatter.timeZone = TimeZone.current
+    let localDate = dateFormatter.string(from: date)
+    return localDate
+}
+
+
 
 struct WeatherView: View {
     // Replace YOUR_API_KEY in WeatherManager with your own API key for the app to work
@@ -7,7 +20,9 @@ struct WeatherView: View {
     @EnvironmentObject var locationManager: LocationManager
     @EnvironmentObject var weatherViewModel: WeatherViewModel
     @StateObject var viewModel = WeatherViewModel()
-
+    @State private var showAlert = false
+    
+    
     var body: some View {
         let weatherDescriptions = [
             "Clear": ("Clear", "sun.max.fill"),
@@ -38,12 +53,11 @@ struct WeatherView: View {
                         {
                             Text(weather.name)
                                 .bold()
-                                //.font(.title)
+                             
                                 .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 40))
                         } else {
                             Text(weatherViewModel.weather?.name ?? "")
                                 .bold()
-                                //.font(.title)
                                 .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 40))
                         }
                         Text("Today, \(Date().formatted(.dateTime.month().day().hour().minute()))")
@@ -79,7 +93,7 @@ struct WeatherView: View {
                             }
                         }
                         Spacer()
-                            .frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 200 : 40)
+                            .frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 100 : 40)
                         
                         VStack(alignment: .leading, spacing: 20) {
                             Text("Weather now")
@@ -129,40 +143,17 @@ struct WeatherView: View {
                                 }
                             }
                             
-                            /*HStack {
-                                /*if(sharedText.text == "no")
-                                {
-                                    WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: (weather.sys.sunrise.formatTime()))
-                                    Spacer()
-                                    WeatherRow(logo: "sunset.fill", name: "Sunset", value: (weather.sys.sunset.formatTime()))
-                                }
-                                else {
-                                    WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: "\(weatherViewModel.weather?.sys.sunrise.formatTime() ?? "")")
-                                    Spacer()
-                                    WeatherRow(logo: "sunset.fill", name: "Sunset", value: "\(weatherViewModel.weather?.sys.sunset.formatTime() ?? "")")
-                                }
-                                if let sunrise = viewModel.sunriseTime {
-                                    WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: sunrise.formatTime())
-                                }
-                                if let sunset = viewModel.sunsetTime {
-                                    WeatherRow(logo: "sunset.fill", name: "Sunset", value: sunset.formatTime())
-                                }*/
+                            HStack {
                                 if(sharedText.text == "no") {
-                                    let sunriseDate = Date(timeIntervalSince1970: TimeInterval(weather.sys.sunrise))
-                                    let sunsetDate = Date(timeIntervalSince1970: TimeInterval(weather.sys.sunset))
-                                    WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: (sunriseDate.formatTime()))
+                                    WeatherRow(logo: "sunrise", name: "Sunrise", value: convertTimestamp(weather.sys.sunrise))
                                     Spacer()
-                                    WeatherRow(logo: "sunset.fill", name: "Sunset", value: (sunsetDate.formatTime()))
+                                    WeatherRow(logo: "sunset", name: "Sunset", value: convertTimestamp(weather.sys.sunset))
+                                } else {
+                                    WeatherRow(logo: "sunrise", name: "Sunrise", value: convertTimestamp(weatherViewModel.weather?.sys.sunrise ?? 0))
+                                    Spacer()
+                                    WeatherRow(logo: "sunset", name: "Sunset", value: convertTimestamp(weatherViewModel.weather?.sys.sunset ?? 0))
                                 }
-                                else {
-                                    if let sunrise = weatherViewModel.weather?.sys.sunrise ?? 0 {
-                                        WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: sunrise)
-                                    }
-                                    if let sunset = weatherViewModel.weather?.sys.sunset ?? 0 {
-                                        WeatherRow(logo: "sunset.fill", name: "Sunset", value: sunset)
-                                    }
-                                }
-                            }*/
+                            }
                             
                             HStack {
                                 if(sharedText.text == "no")
@@ -180,10 +171,7 @@ struct WeatherView: View {
                             
                         }
                         .frame(maxWidth: UIDevice.current.userInterfaceIdiom == .pad ? .infinity : 400, alignment: .leading)
-                        //.frame(maxWidth: 400, alignment: .leading)
-                        //.frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        //.padding(.bottom, 20)
                         .foregroundColor(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
                         .background(.white)
                         .cornerRadius(20)
@@ -210,10 +198,30 @@ struct WeatherView: View {
                 }
             }
         }
+        .alert(isPresented: $showAlert) {
+                    Alert(
+                        title: Text("No internet connection"),
+                        message: Text("Setting default location."),
+                        dismissButton: .default(Text("OK")) {
+                            showAlert = false
+                        }
+                    )
+                }
+        .onAppear {
+            checkInternetConnection()
+        }
+    }
+    
+    func checkInternetConnection() {
+        let monitor = NWPathMonitor()
+        monitor.pathUpdateHandler = { path in
+            if path.status == .satisfied {
+                showAlert = false
+            } else {
+                showAlert = true
+            }
+        }
+        let queue = DispatchQueue(label: "Monitor")
+        monitor.start(queue: queue)
     }
 }
-/*struct WeatherView_Previews: PreviewProvider {
-    static var previews: some View {
-        WeatherView(weather: previewWeather)
-    }
-}*/

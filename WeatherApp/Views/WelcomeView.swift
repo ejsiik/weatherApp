@@ -1,6 +1,9 @@
 import SwiftUI
 import CoreLocationUI
 import UIKit
+import Network
+import CoreLocation
+
 
 struct WelcomeView: View {
     @EnvironmentObject var locationManager: LocationManager
@@ -8,23 +11,6 @@ struct WelcomeView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
 
-    func search(city: String) async {
-        locationManager.isLoading = true
-        do {
-            if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
-               let window = windowScene.windows.first(where: { $0.isKeyWindow }),
-               let windowScene = window.windowScene {
-                try await locationManager.requestLocationByCity(city: city, presentingViewController: (windowScene.windows.first?.rootViewController)!)
-            }
-        } catch let error as NSError {
-            await MainActor.run {
-                alertMessage = error.localizedDescription
-                showAlert = true
-            }
-        }
-        locationManager.isLoading = false
-    }
-    
     var body: some View {
             VStack {
                 Spacer()
@@ -67,9 +53,8 @@ struct WelcomeView: View {
                         
                         Button("Search") {
                             let replaced = (locationName as NSString).replacingOccurrences(of: " ", with: "+")
-                            let correct = replaced.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-                            if !correct.isEmpty {
-                                Task { await search(city: correct)
+                            if !replaced.isEmpty {
+                                Task { await search(city: replaced)
                                     locationName = ""
                                 }
                             }
@@ -84,12 +69,56 @@ struct WelcomeView: View {
             }
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                
+            }
+            /*.alert(isPresented: $showAlert) {
+                        Alert(
+                            title: Text("No internet connection"),
+                            message: Text("Check your connection and try again or click Share Current Location button"),
+                            dismissButton: .default(Text("OK")) {
+                                showAlert = false
+                            }
+                        )
+                    }*/
+            .onAppear {
+                //checkInternetConnection()
+                
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
             .preferredColorScheme(.dark)
     }
-
+    
+    func search(city: String) async {
+        locationManager.isLoading = true
+        do {
+            if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+               let window = windowScene.windows.first(where: { $0.isKeyWindow }),
+               let windowScene = window.windowScene {
+                try await locationManager.requestLocationByCity(city: city, presentingViewController: (windowScene.windows.first?.rootViewController)!)
+            }
+        } catch let error as NSError {
+            await MainActor.run {
+                alertMessage = error.localizedDescription
+                showAlert = true
+                print("sdfsdfasdfafsdasdfafsdafsdadfs")
+            }
+        }
+        locationManager.isLoading = false
+    }
+    
+    func checkInternetConnection() {
+        let monitor = NWPathMonitor()
+        monitor.pathUpdateHandler = { path in
+            if path.status == .satisfied {
+                showAlert = false
+            } else {
+                showAlert = true
+            }
+        }
+        let queue = DispatchQueue(label: "Monitor")
+        monitor.start(queue: queue)
+    }
 }
 
 struct WelcomeView_Previews: PreviewProvider {
