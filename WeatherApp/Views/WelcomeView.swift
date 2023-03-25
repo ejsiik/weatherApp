@@ -25,7 +25,7 @@ struct WelcomeView: View {
         locationManager.isLoading = false
     }
 
-    var body: some View {
+    /*var body: some View {
         VStack {
             VStack(spacing: 20) {
                 Text("Welcome to the Weather App")
@@ -71,7 +71,75 @@ struct WelcomeView: View {
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
+    }*/
+    
+    var body: some View {
+            VStack {
+                Spacer()
+                
+                VStack(spacing: 20) {
+                    Text("Welcome to the Weather App")
+                        .bold()
+                        .font(.title)
+                        .padding(.bottom, 10)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Please share your current location to get the weather in your area")
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 20)
+                
+                Spacer()
+                
+                // LocationButton from CoreLocationUI framework imported above, allows us to requestionLocation
+                VStack(spacing: 20){
+                    LocationButton(.shareCurrentLocation) {
+                        locationManager.requestLocation()
+                    }
+                    .cornerRadius(30)
+                    .symbolVariant(.fill)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 30)
+                    .padding(.vertical, 15)
+                    
+                    Text("or")
+                    
+                    HStack {
+                        TextField("Enter city name", text: $locationName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .font(.headline)
+                            .padding(.horizontal, 15)
+                            .padding(.vertical, 10)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(10)
+                        
+                        Button("Search") {
+                            let replaced = (locationName as NSString).replacingOccurrences(of: " ", with: "+")
+                            let correct = replaced.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+                            if !correct.isEmpty {
+                                Task { await search(city: correct)
+                                    locationName = ""
+                                }
+                            }
+                        }
+                        .font(.headline)
+                        .foregroundColor(Color(.systemBlue))
+                    }
+                    .padding(.horizontal, 20)
+                }
+                
+                Spacer()
+            }
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
+            .preferredColorScheme(.dark)
+        
+
     }
+
 }
 
 struct WelcomeView_Previews: PreviewProvider {

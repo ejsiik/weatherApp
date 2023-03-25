@@ -7,14 +7,29 @@ struct FavouriteView: View {
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject var sharedText: SharedText
     @FocusState private var isFocused: Bool
+    @Binding var selection: Int
     
     var body: some View {
-        VStack {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Locations")
+                .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 40))
+                .fontWeight(.bold)
+                .padding(UIDevice.current.userInterfaceIdiom == .pad ? 80 : 20)
+            
+            
             List {
                 ForEach(favouriteLocationManager.locations) { location in
-                    Text(location.name).onTapGesture {
-                        Task { await selectLocation(city: location.name) }
-                    }
+                    
+                    Text(location.name)
+                        .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 20))
+                        .fontWeight(.medium)
+                        .padding(UIDevice.current.userInterfaceIdiom == .pad ? 30 : 10)
+                        .foregroundColor(.primary)
+                        .onTapGesture {
+                            sharedText.text = location.name
+                            Task { await selectLocation(city: location.name) }
+                            selection = 1 // Switch to WeatherView
+                        }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             Button {
                                 removeLocation(location: location)
@@ -26,20 +41,44 @@ struct FavouriteView: View {
                 }
                 .onDelete(perform: removeLocations)
             }
+            .listStyle(.insetGrouped)
+            .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
+            .preferredColorScheme(.dark)
+            
+            Divider()
+            
             HStack {
                 TextField("Enter city name", text: $locationName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .focused($isFocused)
-                Button("Add") {
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 15)
+                Button(action: {
                     let replaced = (locationName as NSString).replacingOccurrences(of: " ", with: "+")
                     let correct = replaced.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
                     favouriteLocationManager.addLocation(correct)
                     locationName = ""
                     isFocused = false
+                }) {
+                    Image(systemName: "plus")
+                        .foregroundColor(.white)
+                        .font(.headline)
                 }
-            }.padding()
+                .frame(width: 50, height: 50)
+                .background(Color.blue)
+                .clipShape(Circle())
+                .padding(.vertical, 10)
+                .padding(.horizontal, 15)
+            }
+            .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
+            .preferredColorScheme(.dark)
+            .cornerRadius(10)
+            .padding(.horizontal)
+            .padding(.bottom)
         }
         .navigationBarItems(trailing: EditButton())
+        .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
+        .preferredColorScheme(.dark)
     }
 
     func selectLocation(city: String) async{
@@ -67,8 +106,8 @@ struct FavouriteView: View {
     }
 }
 
-struct FavouriteView_Previews: PreviewProvider {
+/*struct FavouriteView_Previews: PreviewProvider {
     static var previews: some View {
-        FavouriteView()
+        FavouriteView(selection: selection)
     }
-}
+}*/

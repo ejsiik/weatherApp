@@ -23,7 +23,14 @@ struct ForecastView: View {
         if (locationManager.location != nil && !locationManager.isLoading) {
             VStack {
                 if(forecast != nil && !isLoading) {
-                    Text("\(forecast!.city.name)").bold().font(.system(size: 24))
+                    ZStack {
+                        Color(hue: 0.656, saturation: 0.787, brightness: 0.354)
+                        Text("\(forecast!.city.name)")
+                            .bold()
+                            .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 30))
+                    }
+                    //.frame(maxWidth: .UIDevice.current.userInterfaceIdiom == .pad ? .infinity : .infinity, alignment: .leading)
+                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 200 : 80, alignment: .leading)
                     ForecastListView(forecast: forecast!)
                 }
                 else if (isLoading) {
@@ -35,6 +42,7 @@ struct ForecastView: View {
             }.onAppear {
                 Task { await loadWeatherForecast(location: locationManager.location!) }
             }
+            
         }
         else if (locationManager.isLoading) {
             LoadingView()

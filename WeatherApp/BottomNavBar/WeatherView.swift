@@ -6,8 +6,30 @@ struct WeatherView: View {
     @EnvironmentObject var sharedText: SharedText
     @EnvironmentObject var locationManager: LocationManager
     @EnvironmentObject var weatherViewModel: WeatherViewModel
-    
+    @StateObject var viewModel = WeatherViewModel()
+
     var body: some View {
+        let weatherDescriptions = [
+            "Clear": ("Clear", "sun.max.fill"),
+            "Clouds": ("Cloudy", "cloud.fill"),
+            "Drizzle": ("Drizzle", "cloud.drizzle.fill"),
+            "Rain": ("Rain", "cloud.rain.fill"),
+            "Thunderstorm": ("Thunderstorm", "cloud.bolt.fill"),
+            "Snow": ("Snow", "cloud.snow.fill"),
+            "Mist": ("Mist", "cloud.fog.fill"),
+            "Smoke": ("Smoke", "smoke.fill"),
+            "Haze": ("Haze", "sun.haze.fill"),
+            "Dust": ("Dust", "sun.dust.fill"),
+            "Fog": ("Fog", "cloud.fog.fill"),
+            "Sand": ("Sandstorm", "cloud.hail.fill"),
+            "Ash": ("Volcanic Ash", "smoke.fill"),
+            "Squall": ("Squall", "wind.snow"),
+            "Tornado": ("Tornado", "tornado"),
+        ]
+        
+        let weatherCode = (sharedText.text == "no" ? weather.weather[0].main : weatherViewModel.weather?.weather[0].main) ?? weather.weather[0].main
+        let (weatherDescription, weatherIcon) = weatherDescriptions[weatherCode] ?? ("Nieznana", "questionmark")
+        
         ScrollView{
             ZStack(alignment: .leading) {
                 VStack {
@@ -16,64 +38,66 @@ struct WeatherView: View {
                         {
                             Text(weather.name)
                                 .bold()
-                                .font(.title)
+                                //.font(.title)
+                                .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 40))
                         } else {
                             Text(weatherViewModel.weather?.name ?? "")
                                 .bold()
-                                .font(.title)
+                                //.font(.title)
+                                .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 40))
                         }
                         Text("Today, \(Date().formatted(.dateTime.month().day().hour().minute()))")
                             .fontWeight(.light)
+                            .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 20))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     
                     Spacer()
+                        .frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 100 : 40)
                     
                     VStack {
                         HStack {
-                            VStack(spacing: 20) {
-                                Image(systemName: "cloud")
-                                    .font(.system(size: 40))
-                                if(sharedText.text == "no") {
-                                    Text("\(weather.weather[0].main)")
-                                } else {
-                                    Text("\(weatherViewModel.weather?.weather[0].main ?? "")")
-                                }
+                            VStack(spacing: 30) {
+                                Image(systemName: weatherIcon)
+                                    .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 120 : 50))
+                                Text(weatherDescription)
+                                    .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 40 : 20))
                             }
                             .frame(width: 150, alignment: .leading)
                             
                             Spacer()
                             if(sharedText.text == "no") {
                                 Text(weather.main.temp.roundDouble() + "°")
-                                    .font(.system(size: 100))
+                                    .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 140 : 80))
                                     .fontWeight(.bold)
                                     .padding()
                             } else {
                                 Text("\(weatherViewModel.weather?.main.temp.roundDouble() ?? "0")°")
-                                    .font(.system(size: 100))
+                                    .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 140 : 80))
                                     .fontWeight(.bold)
                                     .padding()
                             }
                         }
                         Spacer()
-                            .frame(height:  80)
+                            .frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 200 : 40)
                         
                         VStack(alignment: .leading, spacing: 20) {
                             Text("Weather now")
                                 .bold()
                                 .padding(.bottom)
+                                .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 40 : 20))
                             
                             HStack {
                                 if(sharedText.text == "no")
                                 {
-                                    WeatherRow(logo: "thermometer.low", name: "Min temp", value: (weather.main.tempMin.roundDouble() + ("°")))
+                                    WeatherRow(logo: "thermometer", name: "Min temp", value: (weather.main.tempMin.roundDouble() + ("°")))
                                     Spacer()
-                                    WeatherRow(logo: "thermometer.high", name: "Max temp", value: (weather.main.tempMax.roundDouble() + "°"))
+                                    WeatherRow(logo: "thermometer", name: "Max temp", value: (weather.main.tempMax.roundDouble() + "°"))
                                 }
                                 else {
-                                    WeatherRow(logo: "thermometer.low", name: "Min temp", value: "\(weatherViewModel.weather?.main.tempMin.roundDouble() ?? "0")°")
+                                    WeatherRow(logo: "thermometer", name: "Min temp", value: "\(weatherViewModel.weather?.main.tempMin.roundDouble() ?? "0")°")
                                     Spacer()
-                                    WeatherRow(logo: "thermometer.high", name: "Max temp", value: "\(weatherViewModel.weather?.main.tempMax.roundDouble() ?? "0")°")
+                                    WeatherRow(logo: "thermometer", name: "Max temp", value: "\(weatherViewModel.weather?.main.tempMax.roundDouble() ?? "0")°")
                                 }
                             }
                             
@@ -94,24 +118,76 @@ struct WeatherView: View {
                             HStack {
                                 if(sharedText.text == "no")
                                 {
-                                    WeatherRow(logo: "pressure", name: "Pressure", value: (weather.main.pressure.roundDouble() + " hPa"))
+                                    WeatherRow(logo: "barometer", name: "Pressure", value: (weather.main.pressure.roundDouble() + " hPa"))
                                     Spacer()
                                     WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weather.main.feelsLike.roundDouble())°")
                                 }
                                 else {
-                                    WeatherRow(logo: "pressure", name: "Pressure", value: "\(weatherViewModel.weather?.main.pressure.roundDouble() ?? "0") hPa")
+                                    WeatherRow(logo: "barometer", name: "Pressure", value: "\(weatherViewModel.weather?.main.pressure.roundDouble() ?? "0") hPa")
                                     Spacer()
                                     WeatherRow(logo: "thermometer.sun", name: "Feels like", value: "\(weatherViewModel.weather?.main.feelsLike.roundDouble() ?? "0")°")
                                 }
                             }
                             
+                            /*HStack {
+                                /*if(sharedText.text == "no")
+                                {
+                                    WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: (weather.sys.sunrise.formatTime()))
+                                    Spacer()
+                                    WeatherRow(logo: "sunset.fill", name: "Sunset", value: (weather.sys.sunset.formatTime()))
+                                }
+                                else {
+                                    WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: "\(weatherViewModel.weather?.sys.sunrise.formatTime() ?? "")")
+                                    Spacer()
+                                    WeatherRow(logo: "sunset.fill", name: "Sunset", value: "\(weatherViewModel.weather?.sys.sunset.formatTime() ?? "")")
+                                }
+                                if let sunrise = viewModel.sunriseTime {
+                                    WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: sunrise.formatTime())
+                                }
+                                if let sunset = viewModel.sunsetTime {
+                                    WeatherRow(logo: "sunset.fill", name: "Sunset", value: sunset.formatTime())
+                                }*/
+                                if(sharedText.text == "no") {
+                                    let sunriseDate = Date(timeIntervalSince1970: TimeInterval(weather.sys.sunrise))
+                                    let sunsetDate = Date(timeIntervalSince1970: TimeInterval(weather.sys.sunset))
+                                    WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: (sunriseDate.formatTime()))
+                                    Spacer()
+                                    WeatherRow(logo: "sunset.fill", name: "Sunset", value: (sunsetDate.formatTime()))
+                                }
+                                else {
+                                    if let sunrise = weatherViewModel.weather?.sys.sunrise ?? 0 {
+                                        WeatherRow(logo: "sunrise.fill", name: "Sunrise", value: sunrise)
+                                    }
+                                    if let sunset = weatherViewModel.weather?.sys.sunset ?? 0 {
+                                        WeatherRow(logo: "sunset.fill", name: "Sunset", value: sunset)
+                                    }
+                                }
+                            }*/
+                            
+                            HStack {
+                                if(sharedText.text == "no")
+                                {
+                                    WeatherRow(logo: "cloud.rain.fill", name: "Chance of rain", value: ("\(weather.clouds.all)%"))
+                                    Spacer()
+                                    WeatherRow(logo: "eye.fill", name: "Visibility", value: ("\(weather.visibility/1000) km"))
+                                }
+                                else {
+                                    WeatherRow(logo: "cloud.rain.fill", name: "Chance of rain", value: "\(weatherViewModel.weather?.clouds.all ?? 0)%")
+                                    Spacer()
+                                    WeatherRow(logo: "eye.fill", name: "Visibility", value: "\((weatherViewModel.weather?.visibility ?? 0) / 1000) km")
+                                }
+                            }
+                            
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: UIDevice.current.userInterfaceIdiom == .pad ? .infinity : 400, alignment: .leading)
+                        //.frame(maxWidth: 400, alignment: .leading)
+                        //.frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        .padding(.bottom, 20)
+                        //.padding(.bottom, 20)
                         .foregroundColor(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
                         .background(.white)
                         .cornerRadius(20)
+                        .padding(.horizontal, UIDevice.current.userInterfaceIdiom == .pad ? 80 : 0)
                         Spacer()
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -121,14 +197,15 @@ struct WeatherView: View {
                 .edgesIgnoringSafeArea(.bottom)
                 .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
                 .preferredColorScheme(.dark)
-                
             }
-    }.onAppear {
+        }.onAppear {
             Task {
                 if(sharedText.text == "no")
                 {
+                    print(sharedText.text+"model")
                     print(locationManager.location ?? "xd")
                 } else {
+                    print(sharedText.text+"viewmodel")
                     await weatherViewModel.getWeatherForCity(city: sharedText.text)
                 }
             }

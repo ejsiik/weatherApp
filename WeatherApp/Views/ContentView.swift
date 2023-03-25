@@ -11,7 +11,7 @@ struct ContentView: View {
     @EnvironmentObject var locationManager: LocationManager
     var weatherManager = WeatherManager()
     @State var weather: ResponseBody?
-    @State private var selection = 1 // tabitem selection by default
+    @State var selection = 1 // tabitem selection by default
     @StateObject private var sharedText = SharedText()
     @StateObject private var weatherViewModel = WeatherViewModel()
     
@@ -20,7 +20,7 @@ struct ContentView: View {
         VStack {
             if let location = locationManager.location {
              if let weather = weather {
-                 TabView(selection: $selection) {	
+                 /*TabView(selection: $selection) {
                      ForecastView()
                          .tabItem{
                              Image(systemName: "location")
@@ -37,7 +37,32 @@ struct ContentView: View {
                          .tabItem{
                              Image(systemName: "heart.fill")
                          }.tag(2)
+                 }*/
+                 TabView(selection: $selection) {
+                     ForecastView()
+                         .tabItem {
+                             Label("Forecast", systemImage: "location")
+                         }
+                         .tag(0)
+                     
+                     WeatherView(weather: weather)
+                         .environmentObject(sharedText)
+                         .environmentObject(locationManager)
+                         .environmentObject(weatherViewModel)
+                         .tabItem {
+                             Label("Weather", systemImage: "sun.max")
+                         }
+                         .tag(1)
+                     
+                     FavouriteView(selection: $selection)
+                         .environmentObject(sharedText)
+                         .tabItem {
+                             Label("Favorites", systemImage: "heart.fill")
+                         }
+                         .tag(2)
                  }
+                 .accentColor(.white)
+                 .background(Color(UIColor.systemBackground))
              //.tabViewStyle(PageTabViewStyle())
              } else {
                  // Dodać info dla użytkownika że pobrano dane offline!!!!!!!!!!!

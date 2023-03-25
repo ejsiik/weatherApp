@@ -6,23 +6,27 @@ struct WeatherRow: View {
     var value: String
     
     var body: some View {
-        HStack(spacing: 20) {
+        
+        HStack(alignment: .lastTextBaseline) {
+            Spacer()
+                //.frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 0)
+                .frame(width: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 0, height: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 0)
             Image(systemName: logo)
-                .font(.title2)
-                .frame(width: 20, height: 20)
-                .padding()
-                .background(Color(hue: 1.0, saturation: 0.0, brightness: 0.888))
-                .cornerRadius(50)
-
-            
-            VStack(alignment: .leading, spacing: 8) {
+                .font(.system(size: UIDevice.current.userInterfaceIdiom == .phone ? 25 : 35))
+                .foregroundColor(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
+                .frame(width: UIDevice.current.userInterfaceIdiom == .phone ? 30 : 40)
+                .padding(.trailing)
+            VStack(alignment: .leading, spacing: 5) {
                 Text(name)
-                    .font(.caption)
-                
+                    .fontWeight(.light)
+                    .font(.system(size: UIDevice.current.userInterfaceIdiom == .phone ? 15 : 25))
                 Text(value)
-                    .bold()
-                    .font(.title)
+                    .fontWeight(.bold)
+                    .font(.system(size: UIDevice.current.userInterfaceIdiom == .phone ? 20 : 30))
             }
+            .fixedSize(horizontal: false, vertical: true)
+            Spacer()
+                .frame(width: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 0, height: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 0)
         }
     }
 }

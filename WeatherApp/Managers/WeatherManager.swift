@@ -146,13 +146,24 @@ struct CoordinatesResponse: Decodable {
     var lat: Double
 }
 
+struct SysResponse: Decodable {
+    var sunrise: Int
+    var sunset: Int
+}
+
+struct CloudsResponse: Decodable {
+    var all: Int
+}
+
 struct ResponseBody: Decodable {
     var coord: CoordinatesResponse
     var weather: [WeatherResponse]
     var main: MainResponse
     var name: String
     var wind: WindResponse
-
+    var sys: SysResponse
+    var clouds: CloudsResponse
+    var visibility: Int
 }
 
 extension MainResponse {
@@ -160,5 +171,15 @@ extension MainResponse {
     var feelsLike: Double { return feels_like }
     var tempMin: Double { return temp_min }
     var tempMax: Double { return temp_max }
+}
+
+extension Date {
+    func formatTime() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        formatter.amSymbol = "AM"
+        formatter.pmSymbol = "PM"
+        return formatter.string(from: self)
+    }
 }
 
