@@ -26,8 +26,8 @@ struct FavouriteView: View {
                         .padding(UIDevice.current.userInterfaceIdiom == .pad ? 30 : 10)
                         .foregroundColor(.primary)
                         .onTapGesture {
-                            sharedText.text = location.name
                             Task { await selectLocation(city: location.name) }
+                            sharedText.text = location.name
                             selection = 1 // Switch to WeatherView
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {

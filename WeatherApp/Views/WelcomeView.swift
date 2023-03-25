@@ -24,54 +24,6 @@ struct WelcomeView: View {
         }
         locationManager.isLoading = false
     }
-
-    /*var body: some View {
-        VStack {
-            VStack(spacing: 20) {
-                Text("Welcome to the Weather App")
-                    .bold()
-                    .font(.title)
-                
-                Text("Please share your current location to get the weather in your area")
-                    .padding()
-            }
-            .multilineTextAlignment(.center)
-            .padding()
-            
-            
-            // LocationButton from CoreLocationUI framework imported above, allows us to requestionLocation
-            VStack{
-                LocationButton(.shareCurrentLocation) {
-                    locationManager.requestLocation()
-                }
-                .cornerRadius(30)
-                .symbolVariant(.fill)
-                .foregroundColor(.white)
-                
-                Text("or").padding()
-                
-                HStack {
-                    TextField("Enter city name", text: $locationName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .fixedSize()
-                    Button("Search") {
-                        let replaced = (locationName as NSString).replacingOccurrences(of: " ", with: "+")
-                        let correct = replaced.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-                        if !correct.isEmpty {
-                            Task { await search(city: correct)
-                                locationName = ""
-                            }
-                        }
-                    }
-                }
-                
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .alert(isPresented: $showAlert) {
-            Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-        }
-    }*/
     
     var body: some View {
             VStack {
@@ -136,8 +88,6 @@ struct WelcomeView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
             .preferredColorScheme(.dark)
-        
-
     }
 
 }
