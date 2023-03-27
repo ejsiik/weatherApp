@@ -48,7 +48,6 @@ struct ContentView: View {
                     .background(Color(UIColor.systemBackground))
                     //.tabViewStyle(PageTabViewStyle())
                 } else {
-                    // Dodać info dla użytkownika że pobrano dane offline!!!!!!!!!!!
                     LoadingView()
                         .task {
                             do {

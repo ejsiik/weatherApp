@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreLocation
 import Network
+import CoreLocationUI
 
 func convertTimestamp(_ timestamp: Int) -> String {
     let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
@@ -187,7 +188,29 @@ struct WeatherView: View {
                     VStack {
                         HStack {
                             Spacer()
-                            Button(action: {
+                            LocationButton() {
+                                locationManager.requestLocation()
+                                guard let location = locationManager.location else {
+                                    print("Error getting current location")
+                                    return
+                                }
+                                
+                                Task {
+                                    await weatherViewModel.getWeatherForCoordinates(latitude: location.latitude, longitude: location.longitude)
+                                }
+                                
+                                if let cityName = locationManager.cityName {
+                                    print(cityName)
+                                    sharedText.text = cityName
+                                    locationManager.locationUpdated = true
+                                }
+                            }
+                            .cornerRadius(30)
+                            .symbolVariant(.fill)
+                            .foregroundColor(.white)
+                            .labelStyle(.iconOnly)
+                            
+                            /*Button(action: {
                                 locationManager.requestLocation()
                                 
                                 guard let location = locationManager.location else {
@@ -208,7 +231,7 @@ struct WeatherView: View {
                                 Image(systemName: "location.fill")
                                     .font(.system(size: UIDevice.current.userInterfaceIdiom == .phone ? 25 : 40))
                                     .foregroundColor(.white)
-                            }
+                            }*/
                         }
                         .padding(25)
                         Spacer()

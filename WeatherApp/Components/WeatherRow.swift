@@ -9,7 +9,7 @@ struct WeatherRow: View {
         
         HStack(alignment: .lastTextBaseline) {
             Spacer()
-                .frame(width: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 0, height: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 0)
+                .frame(width: UIDevice.current.userInterfaceIdiom == .pad ? 40 : 0, height: UIDevice.current.userInterfaceIdiom == .pad ? 40 : 0)
             let imageSize = UIDevice.current.userInterfaceIdiom == .phone ? 25 : 35
             Image(systemName: logo)
                 .font(.system(size: CGFloat(imageSize)))
