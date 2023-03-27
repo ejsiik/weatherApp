@@ -58,67 +58,72 @@ class WeatherManager {
                     list.list.append(currentElement!)
                 }
                 currentElement = ForecastListElement(
-                    id: weekday,
-                    weekday: weekday,
-                    minTemp: el.main.temp,
-                    maxTemp: el.main.temp,
-                    humidity: el.main.humidity
-                )
-            }
-            
-            if (el.main.temp > currentElement!.maxTemp) {
-                currentElement!.maxTemp = el.main.temp;
-            }
-            if (el.main.temp < currentElement!.minTemp) {
-                currentElement!.minTemp = el.main.temp;
-            }
-            if (el.main.humidity > currentElement!.humidity) {
-                currentElement!.humidity = el.main.humidity;
-            }
-        }
-        
-        if (currentElement != nil) {
-            list.list.append(currentElement!)
-        }
-        
-        return list
-    }
-    
-}
+                       id: weekday,
+                       weekday: weekday,
+                       main: el.main,
+                       weather: el.weather,
+                       wind: el.wind,
+                       clouds: el.clouds,
+                       pop: el.pop
+                   )
+               }
+               
+               if (el.main.temp > currentElement!.main.tempMax) {
+                   currentElement!.main.temp_max = el.main.temp;
+               }
+               if (el.main.temp < currentElement!.main.tempMin) {
+                   currentElement!.main.temp_min = el.main.temp;
+               }
+               if (el.main.humidity > currentElement!.main.humidity) {
+                   currentElement!.main.humidity = el.main.humidity;
+               }
+           }
+           
+           if (currentElement != nil) {
+               list.list.append(currentElement!)
+           }
+           
+           return list
+       }
+       
+   }
 
-struct ForecastList {
-    var list: [ForecastListElement]
-    var city: CityData
-}
+   struct ForecastList {
+       var list: [ForecastListElement]
+       var city: CityData
+   }
 
-struct ForecastListElement: Identifiable {
-    var id: String
-    var weekday: String
-    var minTemp: Double
-    var maxTemp: Double
-    var humidity: Double
-}
+   struct ForecastListElement: Identifiable {
+       var id: String
+       var weekday: String
+       var main: MainResponse
+       var weather: [WeatherResponse]
+       var wind: WindResponse
+       var clouds: CloudsResponse
+       var pop: Double
+   }
 
-// Model of the response body we get from calling the OpenWeather API
-struct OWAForecastList: Decodable {
-    var list: [OWAForecastListElement]
-    var city: CityData
-}
+   struct OWAForecastList: Decodable {
+       var list: [OWAForecastListElement]
+       var city: CityData
+   }
 
-struct CityData: Decodable {
-    var id: Int32
-    var name: String
-}
+   struct CityData: Decodable {
+       var id: Int32
+       var name: String
+   }
 
-struct OWAForecastListElement: Decodable, Identifiable {
-    var id: Int64 {
-        dt
-    }
-    var dt: Int64
-    var main: MainResponse
-    var weather: [WeatherResponse]
-    var wind: WindResponse
-}
+   struct OWAForecastListElement: Decodable, Identifiable {
+       var id: Int64 {
+           dt
+       }
+       var dt: Int64
+       var main: MainResponse
+       var weather: [WeatherResponse]
+       var wind: WindResponse
+       var clouds: CloudsResponse
+       var pop: Double
+   }
 
 struct MainResponse: Decodable {
     var temp: Double

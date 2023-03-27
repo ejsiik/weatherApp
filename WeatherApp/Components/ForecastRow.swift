@@ -13,23 +13,22 @@ struct ForecastRow: View {
                         .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 40))
                     VStack(alignment: .leading, spacing: 8) {
                         Text("max/min temp")
-                            //.font(.caption)
                             .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 15))
                         
-                        Text("\(element.maxTemp.roundDouble())° / \(element.minTemp.roundDouble())°")
+                        Text("\(element.main.temp_max.roundDouble())° / \(element.main.temp_min.roundDouble())°")
                             .bold()
                             .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 40 : 25))
                     }
                 }
                 Spacer()
                 HStack {
-                    Image(systemName: "humidity")
+                    Image(systemName: "drop.fill")
                         .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 80 : 40))
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("humidity")
+                        Text("Chance of rain")
                             .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 15))
                         
-                        Text("\(element.humidity.roundDouble())%")
+                        Text("\((element.pop * 100).roundDouble())%")
                             .bold()
                             .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 40 : 25))
                     }

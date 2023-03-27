@@ -40,7 +40,7 @@ struct WeatherView: View {
             "Squall": ("Squall", "wind.snow"),
             "Tornado": ("Tornado", "tornado"),
         ]
-        
+
         let weatherCode = (sharedText.text == "no" ? weather.weather[0].main : weatherViewModel.weather?.weather[0].main) ?? weather.weather[0].main
         let (weatherDescription, weatherIcon) = weatherDescriptions[weatherCode] ?? ("Nieznana", "questionmark")
         //NavigationView{

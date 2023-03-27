@@ -30,7 +30,7 @@ struct ForecastView: View {
                             .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 30))
                     }
                     .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 200 : 80, alignment: .leading)
-                    ForecastListView(forecast: forecast!)
+                    NavigationView{ ForecastListView(forecast: forecast!) }
                 }
                 else if (isLoading) {
                     LoadingView()
