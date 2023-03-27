@@ -157,12 +157,12 @@ struct WeatherView: View {
                                 HStack {
                                     if(sharedText.text == "no")
                                     {
-                                        WeatherRow(logo: "cloud.rain.fill", name: "Chance of rain", value: ("\(weather.clouds.all)%"))
+                                        WeatherRow(logo: "cloud.fill", name: "Chance of cloudiness", value: ("\(weather.clouds.all)%"))
                                         Spacer()
                                         WeatherRow(logo: "eye.fill", name: "Visibility", value: ("\(weather.visibility/1000) km"))
                                     }
                                     else {
-                                        WeatherRow(logo: "cloud.rain.fill", name: "Chance of rain", value: "\(weatherViewModel.weather?.clouds.all ?? 0)%")
+                                        WeatherRow(logo: "cloud.fill", name: "Chance of cloudiness", value: "\(weatherViewModel.weather?.clouds.all ?? 0)%")
                                         Spacer()
                                         WeatherRow(logo: "eye.fill", name: "Visibility", value: "\((weatherViewModel.weather?.visibility ?? 0) / 1000) km")
                                     }

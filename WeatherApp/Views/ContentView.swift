@@ -24,7 +24,7 @@ struct ContentView: View {
                     TabView(selection: $selection) {
                         ForecastView()
                             .tabItem {
-                                Label("Forecast", systemImage: "location")
+                                Label("Forecast", systemImage: "calendar")
                             }
                             .tag(0)
                         

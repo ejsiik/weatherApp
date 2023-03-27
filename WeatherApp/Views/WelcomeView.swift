@@ -9,6 +9,7 @@ struct WelcomeView: View {
     @EnvironmentObject var locationManager: LocationManager
     @State private var locationName = ""
     @State private var showAlert = false
+    @State private var showInternetAlert = false
     @State private var alertMessage = ""
 
     var body: some View {
@@ -70,19 +71,19 @@ struct WelcomeView: View {
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
             }
-            /*.alert(isPresented: $showAlert) {
+            .alert(isPresented: $showInternetAlert) {
                         Alert(
                             title: Text("No internet connection"),
                             message: Text("Check your connection and try again or click Share Current Location button"),
                             dismissButton: .default(Text("OK")) {
-                                showAlert = false
+                                showInternetAlert = false
                             }
                         )
                     }
             .onAppear {
-                //checkInternetConnection()
+                checkInternetConnection()
                 
-            }*/
+            }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
             .preferredColorScheme(.dark)
@@ -100,6 +101,7 @@ struct WelcomeView: View {
             await MainActor.run {
                 alertMessage = error.localizedDescription
                 showAlert = true
+                print("alerat1")
             }
         }
         locationManager.isLoading = false
@@ -109,9 +111,9 @@ struct WelcomeView: View {
         let monitor = NWPathMonitor()
         monitor.pathUpdateHandler = { path in
             if path.status == .satisfied {
-                showAlert = false
+                showInternetAlert = false
             } else {
-                showAlert = true
+                showInternetAlert = true
             }
         }
         let queue = DispatchQueue(label: "Monitor")

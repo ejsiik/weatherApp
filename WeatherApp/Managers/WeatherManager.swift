@@ -17,7 +17,7 @@ class WeatherManager {
         guard (response as? HTTPURLResponse)?.statusCode == 200 else { fatalError("Error while fetching data") }
         
         let decodedData = try JSONDecoder().decode(ResponseBody.self, from: data)
-        
+
         return decodedData
     }
     
