@@ -209,29 +209,8 @@ struct WeatherView: View {
                             .symbolVariant(.fill)
                             .foregroundColor(.white)
                             .labelStyle(.iconOnly)
-                            
-                            /*Button(action: {
-                                locationManager.requestLocation()
-                                
-                                guard let location = locationManager.location else {
-                                    print("Error getting current location")
-                                    return
-                                }
-                                
-                                Task {
-                                    await weatherViewModel.getWeatherForCoordinates(latitude: location.latitude, longitude: location.longitude)
-                                }
-                                
-                                if let cityName = locationManager.cityName {
-                                    print(cityName)
-                                    sharedText.text = cityName
-                                    locationManager.locationUpdated = true
-                                }
-                            }) {
-                                Image(systemName: "location.fill")
-                                    .font(.system(size: UIDevice.current.userInterfaceIdiom == .phone ? 25 : 40))
-                                    .foregroundColor(.white)
-                            }*/
+                            .font(.system(size: UIDevice.current.userInterfaceIdiom == .phone ? 20 : 30))
+                            .padding(UIDevice.current.userInterfaceIdiom == .pad ? 60 : 20)
                         }
                         .padding(25)
                         Spacer()
