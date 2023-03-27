@@ -5,6 +5,7 @@ class WeatherViewModel: ObservableObject {
     @Published var weather: ResponseBody?
     private let weatherManager = WeatherManager()
     @Published var forecastWeather: ForecastList?
+    @Published var cityName: String?
 
 
     func getWeatherForCoordinates(latitude: Double, longitude: Double) async {

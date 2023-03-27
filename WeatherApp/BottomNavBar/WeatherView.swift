@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 import Network
 
 func convertTimestamp(_ timestamp: Int) -> String {
@@ -11,8 +12,6 @@ func convertTimestamp(_ timestamp: Int) -> String {
     return localDate
 }
 
-
-
 struct WeatherView: View {
     // Replace YOUR_API_KEY in WeatherManager with your own API key for the app to work
     var weather: ResponseBody
@@ -21,7 +20,6 @@ struct WeatherView: View {
     @EnvironmentObject var weatherViewModel: WeatherViewModel
     @StateObject var viewModel = WeatherViewModel()
     @State private var showAlert = false
-    
     
     var body: some View {
         let weatherDescriptions = [
@@ -200,7 +198,12 @@ struct WeatherView: View {
                                 Task {
                                     await weatherViewModel.getWeatherForCoordinates(latitude: location.latitude, longitude: location.longitude)
                                 }
-                            
+                                
+                                if let cityName = locationManager.cityName {
+                                    print(cityName)
+                                    sharedText.text = cityName
+                                    locationManager.locationUpdated = true
+                                }
                             }) {
                                 Image(systemName: "location.fill")
                                     .font(.system(size: UIDevice.current.userInterfaceIdiom == .phone ? 25 : 40))
@@ -211,7 +214,9 @@ struct WeatherView: View {
                         Spacer()
                     }
                 }
-            }.onAppear {
+                
+            }
+            .onAppear {
                 Task {
                     if(sharedText.text == "no")
                     {
@@ -221,6 +226,20 @@ struct WeatherView: View {
                         print(sharedText.text+"viewmodel")
                         await weatherViewModel.getWeatherForCity(city: sharedText.text)
                     }
+                }
+            }
+            .onReceive(locationManager.$locationUpdated) { updated in
+                if updated {
+                    Task {
+                        if(sharedText.text == "no")
+                        {
+                            print(locationManager.location ?? "xd")
+                        } else {
+                            print(sharedText.text+"ONRECEIVE")
+                            await weatherViewModel.getWeatherForCity(city: sharedText.text)
+                        }
+                    }
+                    locationManager.locationUpdated = false
                 }
             }
             .alert(isPresented: $showAlert) {

@@ -7,6 +7,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     let manager = CLLocationManager()
     @Published var location: CLLocationCoordinate2D?
     @Published var isLoading = false
+    @Published var cityName: String?
+    @Published var locationUpdated = false
+
     
     override init() {
         super.init()
@@ -59,6 +62,21 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         location = locations.first?.coordinate
         isLoading = false
+
+        guard let location = locations.last else { return }
+        CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
+            if let error = error {
+                print("Reverse geocoding error: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let placemark = placemarks?.first else { return }
+            let city = placemark.locality
+            DispatchQueue.main.async {
+                self.cityName = city
+            }
+            print(city ?? "def value locationmanager")
+        }
     }
     
     // This function will be called if we run into an error
