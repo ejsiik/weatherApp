@@ -11,36 +11,42 @@ extension String {
 
 struct FavouriteView: View {
     @State private var locationName = ""
-    @StateObject private var favouriteLocationManager = FavouriteLocationManager()
+    @State private var locations: [String] = []
+    @AppStorage("locationsData") private var locationsData: String = ""
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject var sharedText: SharedText
     @FocusState private var isFocused: Bool
     @Binding var selection: Int
     @State private var showAlert = false
-
+    @State private var showInternetAlert = false
+    @State private var alertMessage = ""
+    
     var body: some View {
-        
         VStack(alignment: .leading, spacing: 0) {
-            if(showAlert == false) {
+            if(showInternetAlert == false) {
                 Text("Locations")
                     .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 40))
                     .fontWeight(.bold)
                     .padding(UIDevice.current.userInterfaceIdiom == .pad ? 80 : 20)
                 
-                
                 List {
-                    ForEach(favouriteLocationManager.locations) { location in
-                        
-                        Text(location.name)
+                    ForEach(locations, id: \.self) { location in
+                        Text(location)
                             .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 20))
                             .fontWeight(.medium)
+                            .fixedSize(horizontal: false, vertical: true)
                             .padding(UIDevice.current.userInterfaceIdiom == .pad ? 30 : 10)
                             .foregroundColor(.primary)
                             .onTapGesture {
-                                Task { await selectLocation(city: location.name) }
-                                print(location.name)
-                                sharedText.text = location.name
-                                selection = 1 // Switch to WeatherView
+                                Task {
+                                    await selectLocation(city: location)
+                                    
+                                }
+                                print(location)
+                                sharedText.text = location
+                                DispatchQueue.main.async {
+                                    selection = 1 // Switch to WeatherView
+                                }
                             }
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                 Button {
@@ -66,13 +72,7 @@ struct FavouriteView: View {
                         .padding(.vertical, 10)
                         .padding(.horizontal, 15)
                     Button(action: {
-                        var replaced = locationName.cutSpaces()
-                        replaced = (replaced as NSString).replacingOccurrences(of: " ", with: "+")
-                        print (replaced+"dasdas")
-                        let correct = replaced.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-                        favouriteLocationManager.addLocation(correct)
-                        locationName = ""
-                        isFocused = false
+                        addLocation()
                     }) {
                         Image(systemName: "plus")
                             .foregroundColor(.white)
@@ -97,13 +97,16 @@ struct FavouriteView: View {
                 .background(Color.black)
             }
         }
-        .onAppear{checkInternetConnection()}
+        .onAppear{
+            checkInternetConnection()
+            if let savedLocations = try? JSONDecoder().decode([String].self, from: Data(locationsData.utf8)) {
+                locations = savedLocations
+            }
+        }
         .navigationBarItems(trailing: EditButton())
         .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
         .preferredColorScheme(.dark)
     }
-
-    
     
     func selectLocation(city: String) async {
         var cityName = city
@@ -111,8 +114,7 @@ struct FavouriteView: View {
             cityName = "Łódź"
         }
         sharedText.text = cityName
-        print (cityName)
-
+        
         do {
             if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
                let hostingController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
@@ -122,7 +124,7 @@ struct FavouriteView: View {
         } catch let error as CLError {
             if error.code == .locationUnknown {
                 print("Error: Invalid location provided")
-                showAlert = true
+                //showAlert = true
             } else {
                 print("Error \(error)")
             }
@@ -130,31 +132,71 @@ struct FavouriteView: View {
             print("Error: \(error)")
         }
     }
-
-
     
-    func removeLocation(location: Location) {
-        if let index = favouriteLocationManager.locations.firstIndex(where: { $0.id == location.id }) {
-            favouriteLocationManager.locations.remove(at: index)
-            favouriteLocationManager.saveLocations()
+    func addLocation() {
+        let trimmedLocation = locationName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedLocation.isEmpty && !locations.contains(trimmedLocation) {
+            let replaced = (trimmedLocation as NSString).replacingOccurrences(of: " ", with: "+")
+            if !replaced.isEmpty {
+                Task {
+                    await search(city: replaced)
+                    if !showAlert {
+                        locations.append(replaced)
+                        saveLocations()
+                    }
+                    locationName = ""
+                }
+            }
         }
     }
 
+    func removeLocation(location: String) {
+        if let index = locations.firstIndex(of: location) {
+            withAnimation {
+                locations.remove(at: index)
+                saveLocations()
+            }
+        }
+    }
+    
     func removeLocations(at offsets: IndexSet) {
-        favouriteLocationManager.locations.remove(atOffsets: offsets)
-        favouriteLocationManager.saveLocations()
+        locations.remove(atOffsets: offsets)
+    }
+    
+    private func saveLocations() {
+        if let encodedLocations = try? JSONEncoder().encode(locations) {
+            locationsData = String(data: encodedLocations, encoding: .utf8) ?? ""
+        }
     }
     
     func checkInternetConnection() {
         let monitor = NWPathMonitor()
         monitor.pathUpdateHandler = { path in
             if path.status == .satisfied {
-                showAlert = false
+                showInternetAlert = false
             } else {
-                showAlert = true
+                showInternetAlert = true
             }
         }
         let queue = DispatchQueue(label: "Monitor")
         monitor.start(queue: queue)
+    }
+    
+    func search(city: String) async {
+        locationManager.isLoading = true
+        do {
+            if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+               let window = windowScene.windows.first(where: { $0.isKeyWindow }),
+               let windowScene = window.windowScene {
+                try await locationManager.requestLocationByCity(city: city, presentingViewController: (windowScene.windows.first?.rootViewController)!)
+            }
+        } catch let error as NSError {
+            await MainActor.run {
+                alertMessage = error.localizedDescription
+                showAlert = true
+                print("alerat1")
+            }
+        }
+        locationManager.isLoading = false
     }
 }

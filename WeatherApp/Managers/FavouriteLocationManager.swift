@@ -24,27 +24,33 @@ class FavouriteLocationManager: ObservableObject {
             return
         }
         fetchWeatherData(forCity: locationName)
+        print(locationName+"locationName")
     }
     
     private func fetchWeatherData(forCity city: String) {
         let apiKey = "f1713ff8f3edf7b7afd6a48d1bd6c659"
         let urlString = "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=\(apiKey)&units=metric"
+
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")
             return
         }
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data else {
+            
+            guard let data = data  else {
                 print("No data in response: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
             do {
                 let decoder = JSONDecoder()
                 let weatherData = try decoder.decode(WeatherData.self, from: data)
+                print(weatherData.name+"dlaczegoUCIETE")
                 DispatchQueue.main.async {
+                    
                     let newLocation = Location(name: weatherData.name)
                     self.locations.append(newLocation)
                     self.updateLocations()
+                    
                 }
             } catch {
                 print("Error decoding weather data: \(error.localizedDescription)")
