@@ -12,6 +12,7 @@ extension String {
 struct FavouriteView: View {
     @State private var locationName = ""
     @State private var locations: [String] = []
+    @State private var favorites: Set<String> = []
     @AppStorage("locationsData") private var locationsData: String = ""
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject var sharedText: SharedText
@@ -20,7 +21,9 @@ struct FavouriteView: View {
     @State private var showAlert = false
     @State private var showInternetAlert = false
     @State private var alertMessage = ""
-    
+    @State private var draggingIndexSet: IndexSet?
+
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if(showInternetAlert == false) {
@@ -31,7 +34,13 @@ struct FavouriteView: View {
                     .background(Color(.systemGroupedBackground).ignoresSafeArea())
                 
                 List {
-                    ForEach(locations, id: \.self) { location in
+                    ForEach(locations.sorted { lhs, rhs in
+                        if favorites.contains(lhs) != favorites.contains(rhs) {
+                            return favorites.contains(lhs)
+                        } else {
+                            return lhs < rhs
+                        }
+                    }, id: \.self) { location in
                         HStack {
                             Text(location)
                                 .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 20))
@@ -47,14 +56,27 @@ struct FavouriteView: View {
                                     }
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                                .swipeActions(allowsFullSwipe: false) {
+                                    Button(role: .destructive, action: {
+                                        if let draggingIndexSet = draggingIndexSet, draggingIndexSet.contains(locations.firstIndex(of: location)!) {
+                                            // ignore deleting when the location is being dragged
+                                        } else {
+                                            removeLocation(location: location)
+                                        }
+                                    }) {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                                   
                             Button(action: {
-                                removeLocation(location: location)
+                                toggleFavorite(location: location)
                             }) {
-                                Image(systemName: "trash")
-                                    .foregroundColor(.red)
+                                Image(systemName: favorites.contains(location) ? "star.fill" : "star")
+                                    .foregroundColor(favorites.contains(location) ? .yellow : .gray)
                             }
                         }
                         .padding(UIDevice.current.userInterfaceIdiom == .pad ? 30 : 10)
+                        
                         Divider()
                     }
                     .onDelete(perform: removeLocations)
@@ -96,13 +118,34 @@ struct FavouriteView: View {
         }
         .onAppear{
             checkInternetConnection()
-            if let savedLocations = try? JSONDecoder().decode([String].self, from: Data(locationsData.utf8)) {
+            if let savedLocations = UserDefaults.standard.stringArray(forKey: "savedLocations") {
                 locations = savedLocations
+                // load favorites from UserDefaults
+                if let savedFavorites = UserDefaults.standard.stringArray(forKey: "savedFavorites") {
+                    favorites = Set(savedFavorites)
+                }
             }
+            }
+                .navigationBarItems(trailing: EditButton())
+                .background(Color(.systemGroupedBackground).ignoresSafeArea())
         }
-        .navigationBarItems(trailing: EditButton())
-        .background(Color(.systemGroupedBackground).ignoresSafeArea())
-    }
+    
+        func toggleFavorite(location: String) {
+            if favorites.contains(location) {
+                favorites.remove(location)
+            } else {
+                favorites.insert(location)
+            }
+            saveFavorites()
+        }
+    
+        func saveLocations() {
+            UserDefaults.standard.set(locations, forKey: "savedLocations")
+        }
+
+        func saveFavorites() {
+            UserDefaults.standard.set(Array(favorites), forKey: "savedFavorites")
+        }
     
     func selectLocation(city: String) async {
         var cityName = city
@@ -120,7 +163,6 @@ struct FavouriteView: View {
         } catch let error as CLError {
             if error.code == .locationUnknown {
                 print("Error: Invalid location provided")
-                //showAlert = true
             } else {
                 print("Error \(error)")
             }
@@ -129,15 +171,17 @@ struct FavouriteView: View {
         }
     }
     
+
+    
     func addLocation() {
         let trimmedLocation = locationName.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmedLocation.isEmpty && !locations.contains(trimmedLocation) {
-            let replaced = (trimmedLocation as NSString).replacingOccurrences(of: " ", with: "+")
-            if !replaced.isEmpty {
+            
+            if !trimmedLocation.isEmpty {
                 Task {
-                    await search(city: replaced)
+                    await search(city: trimmedLocation)
                     if !showAlert {
-                        locations.append(replaced)
+                        locations.append(trimmedLocation)
                         saveLocations()
                     }
                     locationName = ""
@@ -150,25 +194,27 @@ struct FavouriteView: View {
         locationName = ""
         isFocused = false
     }
-
+    
+    func removeLocations(at offsets: IndexSet) {
+        let locationsToRemove = Array(Set(offsets.map { locations[$0] }).intersection(favorites))
+        favorites.subtract(locationsToRemove)
+        locations.remove(atOffsets: offsets)
+        saveLocations()
+    }
+    
     func removeLocation(location: String) {
         if let index = locations.firstIndex(of: location) {
             withAnimation {
+                if favorites.contains(location) {
+                    favorites.remove(location)
+                }
                 locations.remove(at: index)
                 saveLocations()
             }
         }
     }
+
     
-    func removeLocations(at offsets: IndexSet) {
-        locations.remove(atOffsets: offsets)
-    }
-    
-    private func saveLocations() {
-        if let encodedLocations = try? JSONEncoder().encode(locations) {
-            locationsData = String(data: encodedLocations, encoding: .utf8) ?? ""
-        }
-    }
     
     func checkInternetConnection() {
         let monitor = NWPathMonitor()
@@ -184,12 +230,13 @@ struct FavouriteView: View {
     }
     
     func search(city: String) async {
+        let replaced = (city as NSString).replacingOccurrences(of: " ", with: "+")
         locationManager.isLoading = true
         do {
             if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
                let window = windowScene.windows.first(where: { $0.isKeyWindow }),
                let windowScene = window.windowScene {
-                try await locationManager.requestLocationByCity(city: city, presentingViewController: (windowScene.windows.first?.rootViewController)!)
+                try await locationManager.requestLocationByCity(city: replaced, presentingViewController: (windowScene.windows.first?.rootViewController)!)
             }
         } catch let error as NSError {
             await MainActor.run {
