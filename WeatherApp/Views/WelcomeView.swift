@@ -85,8 +85,7 @@ struct WelcomeView: View {
                 
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
-            .preferredColorScheme(.dark)
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
     }
     
     func search(city: String) async {

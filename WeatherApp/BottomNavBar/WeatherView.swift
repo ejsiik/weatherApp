@@ -43,7 +43,7 @@ struct WeatherView: View {
 
         let weatherCode = (sharedText.text == "no" ? weather.weather[0].main : weatherViewModel.weather?.weather[0].main) ?? weather.weather[0].main
         let (weatherDescription, weatherIcon) = weatherDescriptions[weatherCode] ?? ("Nieznana", "questionmark")
-        //NavigationView{
+        NavigationView{
             ScrollView{
                 ZStack(alignment: .leading) {
                     VStack {
@@ -182,8 +182,7 @@ struct WeatherView: View {
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .edgesIgnoringSafeArea(.bottom)
-                    .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
-                    .preferredColorScheme(.dark)
+                    .background(Color(.systemGroupedBackground).ignoresSafeArea())
                     
                     VStack {
                         HStack {
@@ -216,8 +215,9 @@ struct WeatherView: View {
                         Spacer()
                     }
                 }
-                
             }
+            
+        }
             .onAppear {
                 Task {
                     if(sharedText.text == "no")
@@ -244,6 +244,7 @@ struct WeatherView: View {
                     locationManager.locationUpdated = false
                 }
             }
+            .navigationTitle("Weather")
             .alert(isPresented: $showAlert) {
                 Alert(
                     title: Text("No internet connection"),

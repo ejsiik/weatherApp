@@ -28,40 +28,38 @@ struct FavouriteView: View {
                     .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 40))
                     .fontWeight(.bold)
                     .padding(UIDevice.current.userInterfaceIdiom == .pad ? 80 : 20)
+                    .background(Color(.systemGroupedBackground).ignoresSafeArea())
                 
                 List {
                     ForEach(locations, id: \.self) { location in
-                        Text(location)
-                            .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 20))
-                            .fontWeight(.medium)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(UIDevice.current.userInterfaceIdiom == .pad ? 30 : 10)
-                            .foregroundColor(.primary)
-                            .onTapGesture {
-                                Task {
-                                    await selectLocation(city: location)
-                                    
+                        HStack {
+                            Text(location)
+                                .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 20))
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                                .onTapGesture {
+                                    Task {
+                                        await selectLocation(city: location)
+                                    }
+                                    sharedText.text = location
+                                    DispatchQueue.main.async {
+                                        selection = 1 // Switch to WeatherView
+                                    }
                                 }
-                                print(location)
-                                sharedText.text = location
-                                DispatchQueue.main.async {
-                                    selection = 1 // Switch to WeatherView
-                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Button(action: {
+                                removeLocation(location: location)
+                            }) {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
                             }
-                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                Button {
-                                    removeLocation(location: location)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                                .tint(.red)
-                            }
+                        }
+                        .padding(UIDevice.current.userInterfaceIdiom == .pad ? 30 : 10)
+                        Divider()
                     }
                     .onDelete(perform: removeLocations)
                 }
-                .listStyle(.insetGrouped)
-                .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
-                .preferredColorScheme(.dark)
+                .listStyle(PlainListStyle())
                 
                 Divider()
                 
@@ -84,8 +82,7 @@ struct FavouriteView: View {
                     .padding(.vertical, 10)
                     .padding(.horizontal, 15)
                 }
-                .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
-                .preferredColorScheme(.dark)
+                .background(Color(.systemGroupedBackground).ignoresSafeArea())
                 .cornerRadius(10)
                 .padding(.horizontal)
                 .padding(.bottom)
@@ -104,8 +101,7 @@ struct FavouriteView: View {
             }
         }
         .navigationBarItems(trailing: EditButton())
-        .background(Color(hue: 0.656, saturation: 0.787, brightness: 0.354))
-        .preferredColorScheme(.dark)
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
     }
     
     func selectLocation(city: String) async {
@@ -148,6 +144,11 @@ struct FavouriteView: View {
                 }
             }
         }
+        //hide keyboard
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        //clear text area
+        locationName = ""
+        isFocused = false
     }
 
     func removeLocation(location: String) {

@@ -24,10 +24,10 @@ struct ForecastView: View {
             VStack {
                 if(forecast != nil && !isLoading) {
                     ZStack {
-                        Color(hue: 0.656, saturation: 0.787, brightness: 0.354)
                         Text("\(forecast!.city.name)")
                             .bold()
                             .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 30))
+                            .background(Color(.systemGroupedBackground).ignoresSafeArea())
                     }
                     .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 200 : 80, alignment: .leading)
                     NavigationView{ ForecastListView(forecast: forecast!) }
@@ -38,7 +38,9 @@ struct ForecastView: View {
                 else {
                     Text("Error while loading weather")
                 }
-            }.onAppear {
+            }
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .onAppear {
                 Task { await loadWeatherForecast(location: locationManager.location!) }
             }
             
