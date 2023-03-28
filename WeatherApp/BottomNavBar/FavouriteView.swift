@@ -1,6 +1,13 @@
 import SwiftUI
+import CoreLocation
 import UIKit
 import Network
+
+extension String {
+    func cutSpaces(using chRcterSet: CharacterSet = .whitespacesAndNewlines) -> String {
+        return trimmingCharacters(in: chRcterSet)
+    }
+}
 
 struct FavouriteView: View {
     @State private var locationName = ""
@@ -31,6 +38,7 @@ struct FavouriteView: View {
                             .foregroundColor(.primary)
                             .onTapGesture {
                                 Task { await selectLocation(city: location.name) }
+                                print(location.name)
                                 sharedText.text = location.name
                                 selection = 1 // Switch to WeatherView
                             }
@@ -58,7 +66,9 @@ struct FavouriteView: View {
                         .padding(.vertical, 10)
                         .padding(.horizontal, 15)
                     Button(action: {
-                        let replaced = (locationName as NSString).replacingOccurrences(of: " ", with: "+")
+                        var replaced = locationName.cutSpaces()
+                        replaced = (replaced as NSString).replacingOccurrences(of: " ", with: "+")
+                        print (replaced+"dasdas")
                         let correct = replaced.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
                         favouriteLocationManager.addLocation(correct)
                         locationName = ""
@@ -93,18 +103,35 @@ struct FavouriteView: View {
         .preferredColorScheme(.dark)
     }
 
-    func selectLocation(city: String) async{
+    
+    
+    func selectLocation(city: String) async {
+        var cityName = city
+        if cityName == "Łódź Voivodeship" {
+            cityName = "Łódź"
+        }
+        sharedText.text = cityName
+        print (cityName)
+
         do {
-            //try await locationManager.requestLocationByCity(city: city)
             if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
                let hostingController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
                 
-                try await locationManager.requestLocationByCity(city: city, presentingViewController: hostingController)
+                try await locationManager.requestLocationByCity(city: cityName, presentingViewController: hostingController)
+            }
+        } catch let error as CLError {
+            if error.code == .locationUnknown {
+                print("Error: Invalid location provided")
+                showAlert = true
+            } else {
+                print("Error \(error)")
             }
         } catch {
-            print("Error \(error)" )
+            print("Error: \(error)")
         }
     }
+
+
     
     func removeLocation(location: Location) {
         if let index = favouriteLocationManager.locations.firstIndex(where: { $0.id == location.id }) {

@@ -1,4 +1,5 @@
 import Foundation
+import CoreLocation
 
 class FavouriteLocationManager: ObservableObject {
     @Published var locations = [Location]()
