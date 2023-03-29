@@ -43,6 +43,13 @@ struct ContentView: View {
                                 Label("Favorites", systemImage: "heart.fill")
                             }
                             .tag(2)
+                        MapLocationView(selection: $selection)
+                            .environmentObject(sharedText)
+                            .tabItem {
+                                Label("Map", systemImage: "map.circle.fill")
+                            }
+                            .tag(3)
+                        
                     }
                     .accentColor(.white)
                     .background(Color(.systemGroupedBackground).ignoresSafeArea())

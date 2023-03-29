@@ -29,6 +29,7 @@
 		22B002D22756862D009EF4A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 22B002D12756862D009EF4A2 /* Assets.xcassets */; };
 		22B002D52756862D009EF4A2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 22B002D42756862D009EF4A2 /* Preview Assets.xcassets */; };
 		22B002DC27568847009EF4A2 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B002DB27568847009EF4A2 /* LocationManager.swift */; };
+		CEAAD5C529D42A6600824BA0 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAAD5C429D42A6600824BA0 /* MapView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +57,7 @@
 		22B002D42756862D009EF4A2 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		22B002DB27568847009EF4A2 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		CE84FFDB29CF87AB0026814D /* Gliwice.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = Gliwice.gpx; path = ../../../Downloads/Gliwice.gpx; sourceTree = "<group>"; };
+		CEAAD5C429D42A6600824BA0 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		CEF388AD29CB7F270042EB6E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -161,6 +163,7 @@
 				1680E05329CE0E82009512B1 /* ForecastView.swift */,
 				22401C812756A8FB000305B0 /* WeatherView.swift */,
 				1613307929CD0AAF0030D489 /* FavouriteView.swift */,
+				CEAAD5C429D42A6600824BA0 /* MapView.swift */,
 			);
 			path = BottomNavBar;
 			sourceTree = "<group>";
@@ -252,6 +255,7 @@
 				16CAC06629CE1F3400B615D8 /* ForecastRow.swift in Sources */,
 				22675A902756988100B1D8A3 /* WeatherManager.swift in Sources */,
 				167F7E9D29D2134400454E05 /* ForecastDetailView.swift in Sources */,
+				CEAAD5C529D42A6600824BA0 /* MapView.swift in Sources */,
 				16CAC06B29CE353800B615D8 /* WeekdayFormatter.swift in Sources */,
 				22B002DC27568847009EF4A2 /* LocationManager.swift in Sources */,
 				22401C842756AB8D000305B0 /* ModelData.swift in Sources */,

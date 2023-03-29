@@ -21,6 +21,8 @@ struct WeatherView: View {
     @EnvironmentObject var weatherViewModel: WeatherViewModel
     @StateObject var viewModel = WeatherViewModel()
     @State private var showAlert = false
+    @State private var showGeocodeErrorAlert = false
+
     
     var body: some View {
         let weatherDescriptions = [
@@ -59,6 +61,7 @@ struct WeatherView: View {
                                     .bold()
                                     .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 70 : 40))
                             }
+                            
                             Text("Today, \(Date().formatted(.dateTime.month().day().hour().minute()))")
                                 .fontWeight(.light)
                                 .font(.system(size: UIDevice.current.userInterfaceIdiom == .pad ? 30 : 20))
@@ -243,6 +246,7 @@ struct WeatherView: View {
                     }
                     locationManager.locationUpdated = false
                 }
+                    
             }
             .navigationTitle("Weather")
             .alert(isPresented: $showAlert) {

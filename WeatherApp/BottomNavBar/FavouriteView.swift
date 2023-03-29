@@ -148,17 +148,13 @@ struct FavouriteView: View {
         }
     
     func selectLocation(city: String) async {
-        var cityName = city
-        if cityName == "Łódź Voivodeship" {
-            cityName = "Łódź"
-        }
-        sharedText.text = cityName
+        sharedText.text = city
         
         do {
             if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
                let hostingController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
                 
-                try await locationManager.requestLocationByCity(city: cityName, presentingViewController: hostingController)
+                try await locationManager.requestLocationByCity(city: city, presentingViewController: hostingController)
             }
         } catch let error as CLError {
             if error.code == .locationUnknown {
