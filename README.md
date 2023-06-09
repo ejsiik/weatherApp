@@ -4,7 +4,7 @@ This repository contains a weather app written in Swift that provides various fe
 
 ## Preview and Video Clip
 <div>
-<img src="https://github.com/ejsiik/weatherApp/assets/72543889/0a639d19-57b7-4abd-b985-d0b16821cbe6" alt="maps" width="300">
+<img src="https://github.com/ejsiik/weatherApp/assets/72543889/bd7eecfa-2c31-40cc-965a-d8d9340bb7ba" alt="maps" width="300">
 </div>
 
 Check out the working app in action by watching this [video clip](https://drive.google.com/file/d/1gxt0WtKynwaL9P9YlT79WCi4ZqudOxn8/view?usp=sharing).
